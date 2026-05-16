@@ -16,17 +16,34 @@ const handler = NextAuth({
           throw new Error("Email and password required");
         }
 
+        // Check if admin credentials
+        if (
+          credentials.email === process.env.ADMIN_EMAIL &&
+          credentials.password === process.env.ADMIN_PASSWORD
+        ) {
+          return {
+            id: "admin",
+            name: "Admin",
+            email: process.env.ADMIN_EMAIL,
+            role: "admin",
+          };
+        }
+
+        // Regular user login
         const user = await getUserByEmail(credentials.email);
         if (!user) throw new Error("No account found with this email");
 
-        const valid = await bcrypt.compare(credentials.password, user.password);
+        const valid = await bcrypt.compare(
+          credentials.password,
+          user.password
+        );
         if (!valid) throw new Error("Incorrect password");
 
         return {
           id: user._id.toString(),
           name: user.name,
           email: user.email,
-          role: user.role,
+          role: user.role || "user",
         };
       },
     }),
