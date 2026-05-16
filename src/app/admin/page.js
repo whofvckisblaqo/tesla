@@ -43,9 +43,9 @@ export default function AdminPage() {
     if (status === "loading") return;
 
     if (status === "unauthenticated") {
-      router.push("/admin/login");
-      return;
-    }
+  router.push("/admin-access");
+  return;
+}
 
     if (status === "authenticated") {
       console.log("Session user:", session?.user);
