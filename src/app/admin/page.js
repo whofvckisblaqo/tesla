@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
+import CarForm from "@/components/admin/CarForm";
 
 const STATUS_COLORS = {
   pending_payment: "#F59E0B",
@@ -27,10 +28,16 @@ export default function AdminPage() {
 
   const [orders, setOrders] = useState([]);
   const [users, setUsers] = useState([]);
+  const [cars, setCars] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [updatingId, setUpdatingId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
+  
+  const [showCarForm, setShowCarForm] = useState(false);
+  const [editingCar, setEditingCar] = useState(null);
+  const [seedingDb, setSeedingDb] = useState(false);
+  const [seedMessage, setSeedMessage] = useState("");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -43,9 +50,9 @@ export default function AdminPage() {
     if (status === "loading") return;
 
     if (status === "unauthenticated") {
-  router.push("/admin-access");
-  return;
-}
+      router.push("/admin-access");
+      return;
+    }
 
     if (status === "authenticated") {
       console.log("Session user:", session?.user);
@@ -62,18 +69,47 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     try {
-      const [ordersRes, usersRes] = await Promise.all([
+      const [ordersRes, usersRes, carsRes] = await Promise.all([
         fetch("/api/admin/orders"),
         fetch("/api/admin/users"),
+        fetch("/api/cars"),
       ]);
       const ordersData = await ordersRes.json();
       const usersData = await usersRes.json();
+      const carsData = await carsRes.json();
+      
       setOrders(ordersData.orders || []);
       setUsers(usersData.users || []);
+      setCars(carsData.cars || []);
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const seedDatabase = async () => {
+    setSeedingDb(true);
+    setSeedMessage("");
+    try {
+      const res = await fetch("/api/cars/seed");
+      const data = await res.json();
+      setSeedMessage(data.message);
+      fetchData();
+    } catch (err) {
+      setSeedMessage("Seed failed: " + err.message);
+    } finally {
+      setSeedingDb(false);
+    }
+  };
+
+  const deleteCar = async (carId) => {
+    if (!confirm("Are you sure you want to delete this car?")) return;
+    try {
+      await fetch(`/api/cars?carId=${carId}`, { method: "DELETE" });
+      setCars((prev) => prev.filter((c) => c._id !== carId));
+    } catch (err) {
+      console.error(err);
     }
   };
 
@@ -114,9 +150,8 @@ export default function AdminPage() {
 
   const totalRevenue = orders.reduce((s, o) => s + (o.totalPrice || 0), 0);
   const pendingOrders = orders.filter((o) => o.status === "pending_payment").length;
-  const deliveredOrders = orders.filter((o) => o.status === "delivered").length;
 
-  const tabs = ["overview", "orders", "users"];
+  const tabs = ["overview", "orders", "users", "cars"];
 
   return (
     <main style={{ background: "#000", minHeight: "100vh" }}>
@@ -444,6 +479,107 @@ export default function AdminPage() {
                     </div>
                   ))
                 )}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* CARS TAB */}
+        {activeTab === "cars" && (
+          <div>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
+                <span style={{ color: "#fff", fontWeight: 700 }}>{cars.length}</span> cars in database
+              </p>
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button
+                  onClick={seedDatabase}
+                  disabled={seedingDb}
+                  style={{ padding: "0.5rem 1rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: seedingDb ? "not-allowed" : "pointer" }}
+                >
+                  {seedingDb ? "Seeding..." : "🌱 Seed Default Cars"}
+                </button>
+                <button
+                  onClick={() => { setShowCarForm(true); setEditingCar(null); }}
+                  style={{ padding: "0.5rem 1rem", background: "#E31937", border: "none", color: "#fff", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer" }}
+                >
+                  + Add New Car
+                </button>
+              </div>
+            </div>
+            
+            {/* Seed Message */}
+            {seedMessage && (
+              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
+                ✅ {seedMessage}
+              </div>
+            )}
+            
+            {/* Car Form */}
+            {showCarForm && (
+              <div style={{ marginBottom: "2rem" }}>
+                <CarForm
+                  car={editingCar}
+                  onSave={() => { setShowCarForm(false); setEditingCar(null); fetchData(); }}
+                  onCancel={() => { setShowCarForm(false); setEditingCar(null); }}
+                />
+              </div>
+            )}
+            
+            {/* Cars Grid */}
+            {cars.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🚗</div>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem", marginBottom: "1rem" }}>No cars in database</p>
+                <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.8rem", marginBottom: "1.5rem" }}>Click &quot;Seed Default Cars&quot; to add the 5 Tesla models</p>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
+                {cars.map((car) => (
+                  <div key={car._id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                    {/* Car Image */}
+                    <div style={{ height: "140px", backgroundImage: car.images?.[0] ? `url(${car.images[0]})` : "none", backgroundSize: "cover", backgroundPosition: "center", background: car.images?.[0] ? undefined : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {!car.images?.[0] && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "2rem" }}>🚗</span>}
+                    </div>
+                    {/* Car Info */}
+                    <div style={{ padding: "1rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                        <div>
+                          <p style={{ color: "#fff", fontWeight: 700, fontFamily: "Georgia, serif", fontSize: "1rem", textTransform: "uppercase" }}>{car.name}</p>
+                          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.72rem", marginTop: "0.2rem" }}>{car.tagline}</p>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end" }}>
+                          <span style={{ padding: "0.2rem 0.5rem", background: car.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: car.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                            {car.inStock ? "In Stock" : "Out of Stock"}
+                          </span>
+                          {car.featured && (
+                            <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                              Featured
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <p style={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}>${car.price?.toLocaleString()}</p>
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <button
+                            onClick={() => { setEditingCar(car); setShowCarForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }}
+                            style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => deleteCar(car._id)}
+                            style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </div>
