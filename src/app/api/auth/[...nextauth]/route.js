@@ -65,9 +65,9 @@ const handler = NextAuth({
     },
   },
   pages: {
-    signIn: "/auth/login",
-    error: "/auth/login",
-  },
+  signIn: "/auth/login",
+  error: "/auth/login",
+},
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
 });

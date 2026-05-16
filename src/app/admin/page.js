@@ -40,13 +40,16 @@ export default function AdminPage() {
     return () => window.removeEventListener("resize", check);
   }, []);
 
-  useEffect(() => {
-   if (status === "unauthenticated") router.push("/admin/login");
-    if (status === "authenticated" && session?.user?.role !== "admin") {
-      router.push("/dashboard");
-    }
-  }, [status, session]);
-
+ useEffect(() => {
+  if (status === "unauthenticated") {
+    router.push("/admin/login");
+    return;
+  }
+  if (status === "authenticated" && session?.user?.role !== "admin") {
+    router.push("/");
+    return;
+  }
+}, [status, session]);
   useEffect(() => {
     if (status === "authenticated" && session?.user?.role === "admin") {
       fetchData();
