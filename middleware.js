@@ -5,8 +5,13 @@ export async function middleware(req) {
   const token = await getToken({ req, secret: process.env.NEXTAUTH_SECRET });
   const { pathname } = req.nextUrl;
 
-  // Protect /admin routes
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // Allow admin login page through — no auth needed
+  if (pathname === "/admin/login") {
+    return NextResponse.next();
+  }
+
+  // Protect all other /admin routes
+  if (pathname.startsWith("/admin")) {
     if (!token) {
       return NextResponse.redirect(new URL("/admin/login", req.url));
     }
@@ -19,5 +24,5 @@ export async function middleware(req) {
 }
 
 export const config = {
-  matcher: ["/admin/:path*"],
+  matcher: ["/admin/:path*", "/admin"],
 };
