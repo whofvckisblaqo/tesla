@@ -37,7 +37,7 @@ export const authOptions = {
           };
         }
 
-        console.log("=== NOT ADMIN ===");
+        console.log("=== NOT ADMIN, TRYING REGULAR USER ===");
 
         const user = await getUserByEmail(credentials.email);
         if (!user) throw new Error("No account found with this email");
@@ -76,7 +76,7 @@ export const authOptions = {
   },
   pages: {
     signIn: "/auth/login",
-    error: "/auth/login",
+    error: "/admin-access",
   },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,

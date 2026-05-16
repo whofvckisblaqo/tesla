@@ -19,15 +19,19 @@ export default function AdminAccessPage() {
       email: form.email,
       password: form.password,
       redirect: false,
+      callbackUrl: "/admin",
     });
 
-    console.log("Sign in response:", res);
+    console.log("Full response:", JSON.stringify(res));
 
-    if (res?.error) {
-      setError("Invalid admin credentials");
+    if (!res || res.error || res.status === 401) {
+      setError(`Login failed: ${res?.error || "Unknown error"}`);
       setLoading(false);
-    } else {
+    } else if (res.ok) {
       router.push("/admin");
+    } else {
+      setError("Something went wrong. Please try again.");
+      setLoading(false);
     }
   };
 
@@ -87,7 +91,7 @@ export default function AdminAccessPage() {
         <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "2rem" }}>
 
           {error && (
-            <div style={{ background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
+            <div style={{ background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem", wordBreak: "break-word" }}>
               {error}
             </div>
           )}
@@ -103,7 +107,7 @@ export default function AdminAccessPage() {
                 value={form.email}
                 onChange={(e) => setForm({ ...form, email: e.target.value })}
                 required
-                placeholder="teslasupport@outlook.com"
+                placeholder="admin email"
                 style={{ width: "100%", padding: "0.875rem 1rem", background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "0.875rem", outline: "none", boxSizing: "border-box" }}
                 onFocus={(e) => (e.target.style.borderColor = "#E31937")}
                 onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
