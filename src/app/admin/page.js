@@ -33,7 +33,6 @@ export default function AdminPage() {
   const [activeTab, setActiveTab] = useState("overview");
   const [updatingId, setUpdatingId] = useState(null);
   const [isMobile, setIsMobile] = useState(false);
-  
   const [showCarForm, setShowCarForm] = useState(false);
   const [editingCar, setEditingCar] = useState(null);
   const [seedingDb, setSeedingDb] = useState(false);
@@ -48,21 +47,15 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (status === "loading") return;
-
     if (status === "unauthenticated") {
       router.push("/admin-access");
       return;
     }
-
     if (status === "authenticated") {
-      console.log("Session user:", session?.user);
-      console.log("Role:", session?.user?.role);
-
       if (session?.user?.role !== "admin") {
         router.push("/");
         return;
       }
-
       fetchData();
     }
   }, [status, session]);
@@ -77,7 +70,6 @@ export default function AdminPage() {
       const ordersData = await ordersRes.json();
       const usersData = await usersRes.json();
       const carsData = await carsRes.json();
-      
       setOrders(ordersData.orders || []);
       setUsers(usersData.users || []);
       setCars(carsData.cars || []);
@@ -85,6 +77,26 @@ export default function AdminPage() {
       console.error(err);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const updateOrderStatus = async (orderId, newStatus) => {
+    setUpdatingId(orderId);
+    try {
+      const res = await fetch("/api/admin/orders", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ orderId, status: newStatus }),
+      });
+      if (res.ok) {
+        setOrders((prev) =>
+          prev.map((o) => o._id === orderId ? { ...o, status: newStatus } : o)
+        );
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdatingId(null);
     }
   };
 
@@ -113,34 +125,10 @@ export default function AdminPage() {
     }
   };
 
-  const updateOrderStatus = async (orderId, newStatus) => {
-    setUpdatingId(orderId);
-    try {
-      const res = await fetch("/api/admin/orders", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ orderId, status: newStatus }),
-      });
-      if (res.ok) {
-        setOrders((prev) =>
-          prev.map((o) =>
-            o._id === orderId ? { ...o, status: newStatus } : o
-          )
-        );
-      }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUpdatingId(null);
-    }
-  };
-
   if (status === "loading") {
     return (
       <main style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
-        <p style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.2em", fontSize: "0.875rem" }}>
-          Loading...
-        </p>
+        <p style={{ color: "rgba(255,255,255,0.4)", letterSpacing: "0.2em", fontSize: "0.875rem" }}>Loading...</p>
       </main>
     );
   }
@@ -161,9 +149,7 @@ export default function AdminPage() {
 
         {/* Header */}
         <div style={{ marginBottom: "2.5rem" }}>
-          <p style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.4em", textTransform: "uppercase", marginBottom: "0.75rem" }}>
-            Admin Panel
-          </p>
+          <p style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.4em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Admin Panel</p>
           <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.75rem, 5vw, 3rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>
             Dashboard
           </h1>
@@ -196,18 +182,14 @@ export default function AdminPage() {
               onClick={() => setActiveTab(tab)}
               style={{
                 padding: isMobile ? "0.75rem 1rem" : "0.875rem 1.5rem",
-                background: "none",
-                border: "none",
+                background: "none", border: "none",
                 borderBottom: `2px solid ${activeTab === tab ? "#E31937" : "transparent"}`,
                 color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.4)",
                 fontSize: isMobile ? "0.7rem" : "0.8rem",
                 fontWeight: activeTab === tab ? 700 : 400,
-                letterSpacing: "0.15em",
-                textTransform: "uppercase",
-                cursor: "pointer",
-                marginBottom: "-1px",
-                whiteSpace: "nowrap",
-                transition: "all 0.2s",
+                letterSpacing: "0.15em", textTransform: "uppercase",
+                cursor: "pointer", marginBottom: "-1px",
+                whiteSpace: "nowrap", transition: "all 0.2s",
               }}
             >
               {tab}
@@ -218,21 +200,13 @@ export default function AdminPage() {
         {/* OVERVIEW TAB */}
         {activeTab === "overview" && (
           <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1.5rem" }}>
-
-            {/* Recent Orders */}
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
-                <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase" }}>
-                  Recent Orders
-                </h3>
-                <button
-                  onClick={() => setActiveTab("orders")}
-                  style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.1em", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}
-                >
+                <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase" }}>Recent Orders</h3>
+                <button onClick={() => setActiveTab("orders")} style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.1em", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
                   View All
                 </button>
               </div>
-
               {loading ? (
                 <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem", textAlign: "center", padding: "2rem 0" }}>Loading...</p>
               ) : orders.length === 0 ? (
@@ -241,28 +215,12 @@ export default function AdminPage() {
                 orders.slice(0, 5).map((order, i) => (
                   <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.875rem 0", borderBottom: i < 4 ? "1px solid rgba(255,255,255,0.06)" : "none", gap: "0.5rem", flexWrap: "wrap" }}>
                     <div>
-                      <p style={{ color: "#fff", fontSize: "0.8rem", fontWeight: 600 }}>
-                        #{order._id?.slice(-6).toUpperCase()}
-                      </p>
-                      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.15rem" }}>
-                        {order.customerName}
-                      </p>
+                      <p style={{ color: "#fff", fontSize: "0.8rem", fontWeight: 600 }}>#{order._id?.slice(-6).toUpperCase()}</p>
+                      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.15rem" }}>{order.customerName}</p>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <p style={{ color: "#fff", fontSize: "0.8rem", fontWeight: 600 }}>
-                        ${order.totalPrice?.toLocaleString()}
-                      </p>
-                      <span style={{
-                        display: "inline-block",
-                        marginTop: "0.25rem",
-                        padding: "0.2rem 0.5rem",
-                        background: `${STATUS_COLORS[order.status]}15`,
-                        color: STATUS_COLORS[order.status] || "#9CA3AF",
-                        fontSize: "0.6rem",
-                        fontWeight: 700,
-                        letterSpacing: "0.1em",
-                        textTransform: "uppercase",
-                      }}>
+                      <p style={{ color: "#fff", fontSize: "0.8rem", fontWeight: 600 }}>${order.totalPrice?.toLocaleString()}</p>
+                      <span style={{ display: "inline-block", marginTop: "0.25rem", padding: "0.2rem 0.5rem", background: `${STATUS_COLORS[order.status]}15`, color: STATUS_COLORS[order.status] || "#9CA3AF", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                         {STATUS_LABELS[order.status] || order.status}
                       </span>
                     </div>
@@ -271,12 +229,8 @@ export default function AdminPage() {
               )}
             </div>
 
-            {/* Status Breakdown + Recent Users */}
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem" }}>
-              <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", marginBottom: "1.25rem" }}>
-                Status Breakdown
-              </h3>
-
+              <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", marginBottom: "1.25rem" }}>Status Breakdown</h3>
               {Object.entries(STATUS_LABELS).map(([key, label]) => {
                 const count = orders.filter((o) => o.status === key).length;
                 const pct = orders.length > 0 ? (count / orders.length) * 100 : 0;
@@ -293,22 +247,14 @@ export default function AdminPage() {
                 );
               })}
 
-              <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", marginTop: "2rem", marginBottom: "1rem" }}>
-                Recent Users
-              </h3>
-
+              <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", marginTop: "2rem", marginBottom: "1rem" }}>Recent Users</h3>
               {users.slice(0, 4).map((user, i) => (
                 <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "0.75rem 0", borderBottom: i < 3 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
                   <div>
                     <p style={{ color: "#fff", fontSize: "0.8rem", fontWeight: 600 }}>{user.name}</p>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>{user.email}</p>
                   </div>
-                  <span style={{
-                    padding: "0.2rem 0.6rem",
-                    background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)",
-                    color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)",
-                    fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                  }}>
+                  <span style={{ padding: "0.2rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                     {user.role}
                   </span>
                 </div>
@@ -323,19 +269,14 @@ export default function AdminPage() {
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em", marginBottom: "1.25rem" }}>
               <span style={{ color: "#fff", fontWeight: 700 }}>{orders.length}</span> total orders
             </p>
-
             {loading ? (
               <p style={{ color: "rgba(255,255,255,0.3)", textAlign: "center", padding: "3rem" }}>Loading...</p>
             ) : orders.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}>
-                No orders yet
-              </div>
+              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)", color: "rgba(255,255,255,0.3)" }}>No orders yet</div>
             ) : (
               <div style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
                 {orders.map((order, i) => (
                   <div key={i} style={{ border: "1px solid rgba(255,255,255,0.08)", background: "rgba(255,255,255,0.02)", overflow: "hidden" }}>
-
-                    {/* Order Header */}
                     <div style={{ padding: isMobile ? "1rem" : "1.25rem 1.5rem", borderBottom: "1px solid rgba(255,255,255,0.06)", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.75rem" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "0.75rem" : "1.5rem", flexWrap: "wrap" }}>
                         <div>
@@ -359,58 +300,32 @@ export default function AdminPage() {
                           <p style={{ color: "#fff", fontSize: "0.8rem" }}>{new Date(order.createdAt).toLocaleDateString()}</p>
                         </div>
                       </div>
-
-                      {/* Status Dropdown */}
                       <select
                         value={order.status}
                         onChange={(e) => updateOrderStatus(order._id, e.target.value)}
                         disabled={updatingId === order._id}
-                        style={{
-                          background: `${STATUS_COLORS[order.status]}15`,
-                          border: `1px solid ${STATUS_COLORS[order.status]}40`,
-                          color: STATUS_COLORS[order.status],
-                          padding: "0.4rem 0.75rem",
-                          fontSize: "0.7rem",
-                          fontWeight: 700,
-                          letterSpacing: "0.1em",
-                          textTransform: "uppercase",
-                          cursor: "pointer",
-                          outline: "none",
-                        }}
+                        style={{ background: `${STATUS_COLORS[order.status]}15`, border: `1px solid ${STATUS_COLORS[order.status]}40`, color: STATUS_COLORS[order.status], padding: "0.4rem 0.75rem", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", outline: "none" }}
                       >
                         {Object.entries(STATUS_LABELS).map(([val, label]) => (
-                          <option key={val} value={val} style={{ background: "#111", color: "#fff" }}>
-                            {label}
-                          </option>
+                          <option key={val} value={val} style={{ background: "#111", color: "#fff" }}>{label}</option>
                         ))}
                       </select>
                     </div>
-
-                    {/* Order Items */}
                     <div style={{ padding: isMobile ? "1rem" : "1.25rem 1.5rem" }}>
                       {order.items?.map((item, j) => (
                         <div key={j} style={{ display: "flex", alignItems: "center", gap: "1rem", marginBottom: j < order.items.length - 1 ? "0.875rem" : 0 }}>
                           <div style={{ width: "60px", height: "44px", backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.7)", flexShrink: 0 }} />
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.8rem", fontFamily: "Georgia, serif", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                              {item.name}
-                            </p>
+                            <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.8rem", fontFamily: "Georgia, serif", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
                             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>{item.color} · Qty: {item.quantity}</p>
                           </div>
-                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.8rem", flexShrink: 0 }}>
-                            ${(item.price * item.quantity).toLocaleString()}
-                          </p>
+                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.8rem", flexShrink: 0 }}>${(item.price * item.quantity).toLocaleString()}</p>
                         </div>
                       ))}
-
                       <div style={{ marginTop: "1rem", paddingTop: "1rem", borderTop: "1px solid rgba(255,255,255,0.06)", display: "flex", flexWrap: "wrap", gap: "1rem", justifyContent: "space-between" }}>
-                        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}>
-                          📍 {order.address}, {order.city}, {order.country}
-                        </p>
+                        <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}>📍 {order.address}, {order.city}, {order.country}</p>
                         {order.monthlyPayment > 0 && (
-                          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}>
-                            💳 ${order.downPayment?.toLocaleString(undefined, { maximumFractionDigits: 0 })} down · ${order.monthlyPayment?.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo × {order.loanTerm}mo
-                          </p>
+                          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.72rem" }}>💳 ${order.downPayment?.toLocaleString(undefined, { maximumFractionDigits: 0 })} down · ${order.monthlyPayment?.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo × {order.loanTerm}mo</p>
                         )}
                       </div>
                     </div>
@@ -427,26 +342,18 @@ export default function AdminPage() {
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em", marginBottom: "1.25rem" }}>
               <span style={{ color: "#fff", fontWeight: 700 }}>{users.length}</span> registered users
             </p>
-
             {isMobile ? (
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {users.map((user, i) => (
                   <div key={i} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.1rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                       <p style={{ color: "#fff", fontWeight: 600, fontSize: "0.875rem" }}>{user.name}</p>
-                      <span style={{
-                        padding: "0.2rem 0.6rem",
-                        background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)",
-                        color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)",
-                        fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                      }}>
+                      <span style={{ padding: "0.2rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                         {user.role}
                       </span>
                     </div>
                     <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>{user.email}</p>
-                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem" }}>
-                      Joined {new Date(user.createdAt).toLocaleDateString()}
-                    </p>
+                    <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem" }}>Joined {new Date(user.createdAt).toLocaleDateString()}</p>
                   </div>
                 ))}
               </div>
@@ -464,18 +371,10 @@ export default function AdminPage() {
                     <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", padding: "1rem 1.5rem", borderBottom: i < users.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none", alignItems: "center" }}>
                       <p style={{ color: "#fff", fontSize: "0.875rem", fontWeight: 600 }}>{user.name}</p>
                       <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem" }}>{user.email}</p>
-                      <span style={{
-                        display: "inline-block",
-                        padding: "0.25rem 0.6rem",
-                        background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)",
-                        color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)",
-                        fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase",
-                      }}>
+                      <span style={{ display: "inline-block", padding: "0.25rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
                         {user.role}
                       </span>
-                      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </p>
+                      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>{new Date(user.createdAt).toLocaleDateString()}</p>
                     </div>
                   ))
                 )}
@@ -487,7 +386,6 @@ export default function AdminPage() {
         {/* CARS TAB */}
         {activeTab === "cars" && (
           <div>
-            {/* Header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
               <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
                 <span style={{ color: "#fff", fontWeight: 700 }}>{cars.length}</span> cars in database
@@ -508,15 +406,13 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-            
-            {/* Seed Message */}
+
             {seedMessage && (
               <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
                 ✅ {seedMessage}
               </div>
             )}
-            
-            {/* Car Form */}
+
             {showCarForm && (
               <div style={{ marginBottom: "2rem" }}>
                 <CarForm
@@ -526,8 +422,7 @@ export default function AdminPage() {
                 />
               </div>
             )}
-            
-            {/* Cars Grid */}
+
             {cars.length === 0 ? (
               <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🚗</div>
@@ -538,11 +433,9 @@ export default function AdminPage() {
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
                 {cars.map((car) => (
                   <div key={car._id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    {/* Car Image */}
                     <div style={{ height: "140px", backgroundImage: car.images?.[0] ? `url(${car.images[0]})` : "none", backgroundSize: "cover", backgroundPosition: "center", background: car.images?.[0] ? undefined : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {!car.images?.[0] && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "2rem" }}>🚗</span>}
                     </div>
-                    {/* Car Info */}
                     <div style={{ padding: "1rem" }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                         <div>
