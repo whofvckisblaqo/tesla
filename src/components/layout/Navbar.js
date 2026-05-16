@@ -52,7 +52,7 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }} className="desktop-nav">
-          {[{ label: "Models", href: "/models" }, { label: "Features", href: "/#features" }, { label: "About", href: "/#about" }].map((item) => (
+          {[{ label: "Models", href: "/models" }, { label: "Track Order", href: "/order/track" }, { label: "Features", href: "/#features" }].map((item) => (
             <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
               {item.label}
             </Link>
