@@ -1,3 +1,5 @@
+export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -43,10 +45,7 @@ export async function PATCH(req) {
     const { orderId, status } = await req.json();
 
     if (!orderId || !status) {
-      return NextResponse.json(
-        { message: "Missing orderId or status" },
-        { status: 400 }
-      );
+      return NextResponse.json({ message: "Missing orderId or status" }, { status: 400 });
     }
 
     const db = await getDb();
