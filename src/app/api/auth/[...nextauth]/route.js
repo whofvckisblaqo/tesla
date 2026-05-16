@@ -3,7 +3,7 @@ import CredentialsProvider from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { getUserByEmail } from "@/lib/auth";
 
-const handler = NextAuth({
+export const authOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
@@ -12,31 +12,39 @@ const handler = NextAuth({
         password: { label: "Password", type: "password" },
       },
       async authorize(credentials) {
+        console.log("=== AUTH ATTEMPT ===");
+        console.log("Email received:", credentials.email);
+        console.log("Password received:", credentials.password);
+        console.log("ADMIN_EMAIL from env:", process.env.ADMIN_EMAIL);
+        console.log("ADMIN_PASSWORD from env:", process.env.ADMIN_PASSWORD);
+        console.log("Email match:", credentials.email === process.env.ADMIN_EMAIL);
+        console.log("Password match:", credentials.password === process.env.ADMIN_PASSWORD);
+
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password required");
         }
 
-        // Check if admin credentials
+        // Admin check
         if (
           credentials.email === process.env.ADMIN_EMAIL &&
           credentials.password === process.env.ADMIN_PASSWORD
         ) {
+          console.log("=== ADMIN LOGIN SUCCESS ===");
           return {
-            id: "admin",
+            id: "admin-id",
             name: "Admin",
             email: process.env.ADMIN_EMAIL,
             role: "admin",
           };
         }
 
-        // Regular user login
+        console.log("=== NOT ADMIN, TRYING REGULAR USER ===");
+
+        // Regular user
         const user = await getUserByEmail(credentials.email);
         if (!user) throw new Error("No account found with this email");
 
-        const valid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        const valid = await bcrypt.compare(credentials.password, user.password);
         if (!valid) throw new Error("Incorrect password");
 
         return {
@@ -53,6 +61,8 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = user.role;
+        token.name = user.name;
+        token.email = user.email;
       }
       return token;
     },
@@ -60,16 +70,19 @@ const handler = NextAuth({
       if (token) {
         session.user.id = token.id;
         session.user.role = token.role;
+        session.user.name = token.name;
+        session.user.email = token.email;
       }
       return session;
     },
   },
   pages: {
-  signIn: "/auth/login",
-  error: "/auth/login",
-},
+    signIn: "/auth/login",
+    error: "/auth/login",
+  },
   session: { strategy: "jwt" },
   secret: process.env.NEXTAUTH_SECRET,
-});
+};
 
+const handler = NextAuth(authOptions);
 export { handler as GET, handler as POST };

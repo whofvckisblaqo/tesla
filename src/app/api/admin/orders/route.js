@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getServerSession } from "next-auth";
+import { authOptions } from "@/app/api/auth/[...nextauth]/route";
 import { ObjectId } from "mongodb";
 
 async function isAdmin() {
-  const session = await getServerSession();
+  const session = await getServerSession(authOptions);
   return session?.user?.role === "admin";
 }
 
@@ -28,6 +29,7 @@ export async function GET() {
 
     return NextResponse.json({ orders: serialized });
   } catch (err) {
+    console.error("Admin orders GET error:", err);
     return NextResponse.json({ message: err.message }, { status: 500 });
   }
 }
@@ -41,7 +43,10 @@ export async function PATCH(req) {
     const { orderId, status } = await req.json();
 
     if (!orderId || !status) {
-      return NextResponse.json({ message: "Missing fields" }, { status: 400 });
+      return NextResponse.json(
+        { message: "Missing orderId or status" },
+        { status: 400 }
+      );
     }
 
     const db = await getDb();
@@ -50,8 +55,9 @@ export async function PATCH(req) {
       { $set: { status, updatedAt: new Date() } }
     );
 
-    return NextResponse.json({ message: "Order updated" });
+    return NextResponse.json({ message: "Order updated successfully" });
   } catch (err) {
+    console.error("Admin orders PATCH error:", err);
     return NextResponse.json({ message: err.message }, { status: 500 });
   }
 }
