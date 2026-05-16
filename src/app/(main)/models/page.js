@@ -23,7 +23,20 @@ function ModelCard({ model }) {
       }}
     >
       <div style={{ position: "relative", height: "clamp(160px, 25vw, 220px)", overflow: "hidden" }}>
-        <div style={{ width: "100%", height: "100%", backgroundImage: model.images?.[0] ? `url(${model.images[0]})` : "none", backgroundSize: "cover", backgroundPosition: "center", filter: hovered ? "brightness(0.85)" : "brightness(0.55)", transform: hovered ? "scale(1.05)" : "scale(1)", transition: "all 0.6s ease", background: model.images?.[0] ? undefined : "rgba(255,255,255,0.04)" }} />
+        <div
+          style={{
+            width: "100%",
+            height: "100%",
+            backgroundImage: model.images?.[0] ? `url(${model.images[0]})` : "none",
+            backgroundSize: "cover",
+            backgroundPosition: "center",
+            backgroundRepeat: "no-repeat",
+            backgroundColor: "rgba(255,255,255,0.04)",
+            filter: hovered ? "brightness(0.85)" : "brightness(0.55)",
+            transform: hovered ? "scale(1.05)" : "scale(1)",
+            transition: "all 0.6s ease",
+          }}
+        />
         <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "60%", background: "linear-gradient(to top, rgba(0,0,0,0.9), transparent)" }} />
         <div style={{ position: "absolute", bottom: "1rem", left: "1.25rem" }}>
           <h3 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.25rem, 3vw, 1.75rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase", lineHeight: 1 }}>
@@ -142,7 +155,7 @@ export default function ModelsPage() {
         <Navbar />
 
         {/* Hero */}
-        <div style={{ paddingTop: "7rem", paddingBottom: "3rem", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden", padding: "7rem 1rem 3rem" }}>
+        <div style={{ padding: "7rem 1rem 3rem", textAlign: "center", borderBottom: "1px solid rgba(255,255,255,0.06)", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse 60% 80% at 50% 100%, rgba(227,25,55,0.08) 0%, transparent 70%)" }} />
           <div style={{ position: "relative", zIndex: 1 }}>
             <p style={{ color: "#E31937", fontSize: "0.75rem", letterSpacing: "0.4em", textTransform: "uppercase", marginBottom: "1rem" }}>Our Fleet</p>
@@ -230,7 +243,7 @@ export default function ModelsPage() {
           <div style={{ marginTop: "4rem", padding: "clamp(1.5rem, 4vw, 3rem)", border: "1px solid rgba(255,255,255,0.08)", textAlign: "center", background: "rgba(255,255,255,0.02)" }}>
             <p style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Not Sure Which Model?</p>
             <h3 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "1rem" }}>We Help You Decide</h3>
-            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", marginBottom: "1.75rem", maxWidth: "28rem", margin: "0 auto 1.75rem" }}>
+            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", maxWidth: "28rem", margin: "0 auto 1.75rem" }}>
               Our experts are available to walk you through every model and find the perfect Tesla for your lifestyle.
             </p>
             <a href="mailto:teslasuppport@outlook.com" style={{ display: "inline-block", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}>

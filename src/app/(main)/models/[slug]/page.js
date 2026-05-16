@@ -13,6 +13,7 @@ export default function ModelDetailPage() {
   const { addToCart } = useCart();
 
   const [model, setModel] = useState(null);
+  const [allModels, setAllModels] = useState([]);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
   const [selectedColor, setSelectedColor] = useState(0);
@@ -34,8 +35,10 @@ export default function ModelDetailPage() {
     try {
       const res = await fetch("/api/cars");
       const data = await res.json();
-      const found = data.cars?.find((c) => c.slug === slug);
+      const cars = data.cars || [];
+      const found = cars.find((c) => c.slug === slug);
       setModel(found || null);
+      setAllModels(cars);
     } catch (err) {
       console.error(err);
     } finally {
@@ -106,6 +109,11 @@ export default function ModelDetailPage() {
           gap: 0.5rem;
           flex-wrap: wrap;
         }
+        .related-grid {
+          display: flex;
+          gap: 1rem;
+          flex-wrap: wrap;
+        }
         @media (max-width: 768px) {
           .detail-grid {
             grid-template-columns: 1fr;
@@ -137,17 +145,51 @@ export default function ModelDetailPage() {
           {/* Main Grid */}
           <div className="detail-grid">
 
-            {/* LEFT */}
+            {/* LEFT — Images */}
             <div>
-              <div style={{ width: "100%", height: isMobile ? "260px" : "420px", backgroundImage: model.images?.[selectedImage] ? `url(${model.images[selectedImage]})` : "none", backgroundSize: "cover", backgroundPosition: "center", marginBottom: "1rem", border: "1px solid rgba(255,255,255,0.08)", background: model.images?.[selectedImage] ? undefined : "rgba(255,255,255,0.04)" }} />
+              {/* Main Image */}
+              <div
+                style={{
+                  width: "100%",
+                  height: isMobile ? "260px" : "420px",
+                  backgroundImage: model.images?.[selectedImage] ? `url(${model.images[selectedImage]})` : "none",
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  backgroundRepeat: "no-repeat",
+                  backgroundColor: "rgba(255,255,255,0.04)",
+                  marginBottom: "1rem",
+                  border: "1px solid rgba(255,255,255,0.08)",
+                  overflow: "hidden",
+                }}
+              />
+
+              {/* Thumbnails */}
               <div className="thumbnails-row">
                 {model.images?.map((img, i) => (
-                  <button key={i} onClick={() => setSelectedImage(i)} style={{ width: "70px", height: "52px", backgroundImage: `url(${img})`, backgroundSize: "cover", backgroundPosition: "center", border: `2px solid ${i === selectedImage ? (model.color || "#E31937") : "rgba(255,255,255,0.1)"}`, cursor: "pointer", padding: 0, opacity: i === selectedImage ? 1 : 0.5, transition: "all 0.2s ease", flexShrink: 0 }} />
+                  <button
+                    key={i}
+                    onClick={() => setSelectedImage(i)}
+                    style={{
+                      width: "70px",
+                      height: "52px",
+                      backgroundImage: `url(${img})`,
+                      backgroundSize: "cover",
+                      backgroundPosition: "center",
+                      backgroundRepeat: "no-repeat",
+                      backgroundColor: "rgba(255,255,255,0.04)",
+                      border: `2px solid ${i === selectedImage ? (model.color || "#E31937") : "rgba(255,255,255,0.1)"}`,
+                      cursor: "pointer",
+                      padding: 0,
+                      opacity: i === selectedImage ? 1 : 0.5,
+                      transition: "all 0.2s ease",
+                      flexShrink: 0,
+                    }}
+                  />
                 ))}
               </div>
             </div>
 
-            {/* RIGHT */}
+            {/* RIGHT — Details */}
             <div>
               <span style={{ fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", color: model.color || "#E31937" }}>
                 {model.category}
@@ -187,7 +229,21 @@ export default function ModelDetailPage() {
                   </p>
                   <div className="colors-row">
                     {model.colors.map((color, i) => (
-                      <button key={i} onClick={() => setSelectedColor(i)} style={{ padding: "0.35rem 0.875rem", fontSize: "0.65rem", letterSpacing: "0.1em", textTransform: "uppercase", border: `1px solid ${i === selectedColor ? (model.color || "#E31937") : "rgba(255,255,255,0.15)"}`, background: i === selectedColor ? `${model.color || "#E31937"}22` : "transparent", color: i === selectedColor ? "#fff" : "rgba(255,255,255,0.4)", cursor: "pointer", transition: "all 0.2s ease" }}>
+                      <button
+                        key={i}
+                        onClick={() => setSelectedColor(i)}
+                        style={{
+                          padding: "0.35rem 0.875rem",
+                          fontSize: "0.65rem",
+                          letterSpacing: "0.1em",
+                          textTransform: "uppercase",
+                          border: `1px solid ${i === selectedColor ? (model.color || "#E31937") : "rgba(255,255,255,0.15)"}`,
+                          background: i === selectedColor ? `${model.color || "#E31937"}22` : "transparent",
+                          color: i === selectedColor ? "#fff" : "rgba(255,255,255,0.4)",
+                          cursor: "pointer",
+                          transition: "all 0.2s ease",
+                        }}
+                      >
                         {color}
                       </button>
                     ))}
@@ -213,10 +269,40 @@ export default function ModelDetailPage() {
 
               {/* Buttons */}
               <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <button onClick={handleOrder} style={{ flex: 1, minWidth: "120px", padding: "0.875rem", background: added ? "#10B981" : (model.color || "#E31937"), color: "#fff", border: "none", fontSize: "clamp(0.75rem, 2vw, 0.875rem)", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", transition: "background 0.3s" }}>
+                <button
+                  onClick={handleOrder}
+                  style={{
+                    flex: 1,
+                    minWidth: "120px",
+                    padding: "0.875rem",
+                    background: added ? "#10B981" : (model.color || "#E31937"),
+                    color: "#fff",
+                    border: "none",
+                    fontSize: "clamp(0.75rem, 2vw, 0.875rem)",
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                    transition: "background 0.3s",
+                  }}
+                >
                   {added ? "Added ✓" : "Order Now"}
                 </button>
-                <button style={{ flex: 1, minWidth: "120px", padding: "0.875rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: "clamp(0.75rem, 2vw, 0.875rem)", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer" }}>
+                <button
+                  style={{
+                    flex: 1,
+                    minWidth: "120px",
+                    padding: "0.875rem",
+                    background: "transparent",
+                    color: "#fff",
+                    border: "1px solid rgba(255,255,255,0.2)",
+                    fontSize: "clamp(0.75rem, 2vw, 0.875rem)",
+                    fontWeight: 700,
+                    letterSpacing: "0.15em",
+                    textTransform: "uppercase",
+                    cursor: "pointer",
+                  }}
+                >
                   Test Drive
                 </button>
               </div>
@@ -253,6 +339,31 @@ export default function ModelDetailPage() {
                     <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "clamp(0.8rem, 2vw, 0.875rem)", letterSpacing: "0.05em" }}>{f}</p>
                   </div>
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related Models */}
+          {allModels.filter((m) => m.slug !== slug).length > 0 && (
+            <div style={{ marginTop: "5rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "3.5rem" }}>
+              <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "1.75rem" }}>
+                Explore Other Models
+              </h2>
+              <div className="related-grid">
+                {allModels
+                  .filter((m) => m.slug !== slug)
+                  .slice(0, 3)
+                  .map((m) => (
+                    <Link
+                      key={m._id}
+                      href={`/models/${m.slug}`}
+                      style={{ flex: "1 1 180px", padding: "1.25rem", border: "1px solid rgba(255,255,255,0.08)", textDecoration: "none", background: "rgba(255,255,255,0.02)" }}
+                    >
+                      <p style={{ color: m.color || "#E31937", fontSize: "0.6rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.5rem" }}>{m.category}</p>
+                      <p style={{ color: "#fff", fontWeight: 700, fontSize: "clamp(0.9rem, 2.5vw, 1.1rem)", fontFamily: "Georgia, serif", textTransform: "uppercase" }}>{m.name}</p>
+                      <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", marginTop: "0.25rem" }}>{m.tagline}</p>
+                    </Link>
+                  ))}
               </div>
             </div>
           )}

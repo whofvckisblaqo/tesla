@@ -433,7 +433,7 @@ export default function AdminPage() {
               <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(300px, 1fr))", gap: "1rem" }}>
                 {cars.map((car) => (
                   <div key={car._id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    <div style={{ height: "140px", backgroundImage: car.images?.[0] ? `url(${car.images[0]})` : "none", backgroundSize: "cover", backgroundPosition: "center", background: car.images?.[0] ? undefined : "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <div style={{ height: "140px", backgroundImage: car.images?.[0] ? `url(${car.images[0]})` : "none", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundColor: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
                       {!car.images?.[0] && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "2rem" }}>🚗</span>}
                     </div>
                     <div style={{ padding: "1rem" }}>
