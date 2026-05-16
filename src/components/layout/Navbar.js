@@ -175,8 +175,11 @@ export default function Navbar() {
       {menuOpen && (
         <div style={{ background: "rgba(0,0,0,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            {[{ label: "Models", href: "/models" }, { label: "Features", href: "/#features" }, { label: "About", href: "/#about" }].map((item) => (
-              <Link key={item.label} href={item.href} onClick={() => setMenuOpen(false)} style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
+            {[{ label: "Models", href: "/models" }, { label: "Track Order", href: "/order/track" }, { label: "Features", href: "/#features" }].map((item) => (
+  <Link
+    key={item.label}
+    href={item.href}
+    onClick={() => setMenuOpen(false)} style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
                 {item.label}
               </Link>
             ))}
