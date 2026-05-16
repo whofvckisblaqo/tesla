@@ -13,18 +13,17 @@ export const authOptions = {
       },
       async authorize(credentials) {
         console.log("=== AUTH ATTEMPT ===");
-        console.log("Email received:", credentials.email);
-        console.log("Password received:", credentials.password);
-        console.log("ADMIN_EMAIL from env:", process.env.ADMIN_EMAIL);
-        console.log("ADMIN_PASSWORD from env:", process.env.ADMIN_PASSWORD);
+        console.log("Email received:", JSON.stringify(credentials.email));
+        console.log("Password received:", JSON.stringify(credentials.password));
+        console.log("ADMIN_EMAIL:", JSON.stringify(process.env.ADMIN_EMAIL));
+        console.log("ADMIN_PASSWORD:", JSON.stringify(process.env.ADMIN_PASSWORD));
         console.log("Email match:", credentials.email === process.env.ADMIN_EMAIL);
-        console.log("Password match:", credentials.password === process.env.ADMIN_PASSWORD);
+        console.log("Pass match:", credentials.password === process.env.ADMIN_PASSWORD);
 
         if (!credentials?.email || !credentials?.password) {
           throw new Error("Email and password required");
         }
 
-        // Admin check
         if (
           credentials.email === process.env.ADMIN_EMAIL &&
           credentials.password === process.env.ADMIN_PASSWORD
@@ -38,9 +37,8 @@ export const authOptions = {
           };
         }
 
-        console.log("=== NOT ADMIN, TRYING REGULAR USER ===");
+        console.log("=== NOT ADMIN ===");
 
-        // Regular user
         const user = await getUserByEmail(credentials.email);
         if (!user) throw new Error("No account found with this email");
 
