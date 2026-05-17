@@ -61,7 +61,6 @@ export async function sendOrderConfirmationEmail({ order }) {
       <title>Order Confirmation</title>
     </head>
     <body style="margin: 0; padding: 0; background-color: #000; font-family: Arial, sans-serif;">
-
       <div style="max-width: 600px; margin: 0 auto; background: #000;">
 
         <!-- Header -->
@@ -264,6 +263,176 @@ export async function sendAdminNotificationEmail({ order }) {
     from: "TeslaStore <orders@teslaapp.xyz>",
     to: process.env.ADMIN_EMAIL,
     subject: `🚗 New Order #${_id?.toString().slice(-8).toUpperCase()} — $${totalPrice?.toLocaleString()}`,
+    html,
+  });
+}
+
+export async function sendOrderStatusEmail({ order, newStatus }) {
+  const STATUS_LABELS = {
+    pending_payment: "Awaiting Payment",
+    paid: "Payment Confirmed",
+    processing: "Processing",
+    delivered: "Delivered",
+    cancelled: "Cancelled",
+  };
+
+  const STATUS_COLORS = {
+    pending_payment: "#F59E0B",
+    paid: "#10B981",
+    processing: "#3B82F6",
+    delivered: "#8B5CF6",
+    cancelled: "#E31937",
+  };
+
+  const STATUS_MESSAGES = {
+    pending_payment: "Your order is awaiting payment. Please check your email for payment instructions.",
+    paid: "Your payment has been confirmed. We are now processing your order.",
+    processing: "Great news! Your Tesla is being prepared and will be ready for delivery soon.",
+    delivered: "Your Tesla has been delivered! We hope you enjoy your new vehicle.",
+    cancelled: "Your order has been cancelled. Please contact us if you have any questions.",
+  };
+
+  const STATUS_ICONS = {
+    pending_payment: "⏳",
+    paid: "✅",
+    processing: "⚙️",
+    delivered: "🚗",
+    cancelled: "❌",
+  };
+
+  const label = STATUS_LABELS[newStatus] || newStatus;
+  const color = STATUS_COLORS[newStatus] || "#E31937";
+  const message = STATUS_MESSAGES[newStatus] || "Your order status has been updated.";
+  const icon = STATUS_ICONS[newStatus] || "📦";
+
+  const itemsHtml = order.items
+    ?.map(
+      (item) => `
+      <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #1a1a1a;">
+        <span style="color: #fff; font-size: 14px;">${item.name} — ${item.color} × ${item.quantity}</span>
+        <span style="color: #fff; font-weight: 700; font-size: 14px;">$${(item.price * item.quantity).toLocaleString()}</span>
+      </div>
+    `
+    )
+    .join("") || "";
+
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <meta charset="utf-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>Order Status Update</title>
+    </head>
+    <body style="margin: 0; padding: 0; background-color: #000; font-family: Arial, sans-serif;">
+      <div style="max-width: 600px; margin: 0 auto; background: #000;">
+
+        <!-- Header -->
+        <div style="background: #000; padding: 40px 40px 30px; border-bottom: 1px solid #1a1a1a; text-align: center;">
+          <div style="display: inline-flex; align-items: center; gap: 10px; margin-bottom: 20px;">
+            <svg width="24" height="24" viewBox="0 0 342 512" fill="white">
+              <path d="M0 0l171 512L342 0H216l-45 236L126 0H0zm171 57l36 193H135L171 57z" />
+            </svg>
+            <span style="font-family: Georgia, serif; color: #fff; font-weight: 700; font-size: 18px; letter-spacing: 6px; text-transform: uppercase;">TESLA</span>
+          </div>
+          <p style="color: rgba(255,255,255,0.4); font-size: 13px; margin: 0; letter-spacing: 2px; text-transform: uppercase;">Order Status Update</p>
+        </div>
+
+        <!-- Status Banner -->
+        <div style="background: ${color}15; border-top: 1px solid ${color}30; border-bottom: 1px solid ${color}30; padding: 24px 40px; text-align: center;">
+          <div style="font-size: 2.5rem; margin-bottom: 12px;">${icon}</div>
+          <div style="display: inline-block; padding: 6px 20px; background: ${color}25; border: 1px solid ${color}50; color: ${color}; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; margin-bottom: 12px;">
+            ${label}
+          </div>
+          <h1 style="font-family: Georgia, serif; color: #fff; font-size: 22px; font-weight: 900; text-transform: uppercase; margin: 0 0 10px;">
+            Order #${order._id?.toString().slice(-8).toUpperCase()}
+          </h1>
+          <p style="color: rgba(255,255,255,0.6); font-size: 14px; margin: 0; line-height: 1.6;">
+            ${message}
+          </p>
+        </div>
+
+        <!-- Customer Info -->
+        <div style="padding: 30px 40px 0;">
+          <p style="color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px;">Hello, ${order.customerName}</p>
+          <p style="color: rgba(255,255,255,0.6); font-size: 14px; line-height: 1.7; margin: 0 0 24px;">
+            Your order status has been updated to <strong style="color: ${color};">${label}</strong>.
+            ${newStatus === "delivered" ? " Thank you for choosing Tesla!" : " We will keep you updated on any further changes."}
+          </p>
+        </div>
+
+        <!-- Order Items -->
+        <div style="padding: 0 40px 30px;">
+          <p style="color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 16px;">Your Order</p>
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 16px;">
+            ${itemsHtml}
+            <div style="display: flex; justify-content: space-between; padding-top: 12px; margin-top: 4px;">
+              <span style="color: #fff; font-weight: 700; font-size: 14px; letter-spacing: 1px; text-transform: uppercase;">Total</span>
+              <span style="color: #fff; font-weight: 900; font-size: 18px;">$${order.totalPrice?.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delivery Info -->
+        <div style="padding: 0 40px 30px;">
+          <div style="background: rgba(255,255,255,0.02); border: 1px solid #1a1a1a; padding: 20px;">
+            <p style="color: rgba(255,255,255,0.4); font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 12px;">Delivery Address</p>
+            <p style="color: #fff; font-weight: 600; margin: 0 0 4px; font-size: 14px;">${order.customerName}</p>
+            <p style="color: rgba(255,255,255,0.5); font-size: 13px; margin: 0;">${order.address}, ${order.city}, ${order.country}</p>
+          </div>
+        </div>
+
+        ${newStatus === "pending_payment" ? `
+        <div style="padding: 0 40px 30px;">
+          <div style="background: rgba(59,130,246,0.06); border: 1px solid rgba(59,130,246,0.2); padding: 20px;">
+            <p style="color: #3B82F6; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 10px; font-weight: 700;">📧 Payment Required</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.7; margin: 0;">
+              Please complete your payment using the instructions previously sent to <strong style="color: #fff;">${order.customerEmail}</strong>.
+              Your order reference is <strong style="color: #fff;">#${order._id?.toString().slice(-8).toUpperCase()}</strong>.
+            </p>
+          </div>
+        </div>
+        ` : ""}
+
+        ${newStatus === "delivered" ? `
+        <div style="padding: 0 40px 30px;">
+          <div style="background: rgba(139,92,246,0.06); border: 1px solid rgba(139,92,246,0.2); padding: 20px; text-align: center;">
+            <p style="color: #8B5CF6; font-size: 11px; letter-spacing: 3px; text-transform: uppercase; margin: 0 0 10px; font-weight: 700;">🌟 Enjoy Your Tesla</p>
+            <p style="color: rgba(255,255,255,0.6); font-size: 13px; line-height: 1.7; margin: 0;">
+              Welcome to the Tesla family! Your journey to sustainable driving starts now.
+              Download the Tesla app to unlock all features of your vehicle.
+            </p>
+          </div>
+        </div>
+        ` : ""}
+
+        <!-- Support -->
+        <div style="padding: 0 40px 30px;">
+          <p style="color: rgba(255,255,255,0.3); font-size: 12px; text-align: center; line-height: 1.6;">
+            Questions about your order? Reply to this email or contact us at
+            <a href="mailto:teslasuppport@outlook.com" style="color: #E31937; text-decoration: none;"> teslasuppport@outlook.com</a>
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="padding: 24px 40px; border-top: 1px solid #1a1a1a; text-align: center;">
+          <p style="color: rgba(255,255,255,0.2); font-size: 12px; margin: 0 0 6px;">
+            © ${new Date().getFullYear()} TeslaStore. All rights reserved.
+          </p>
+          <p style="color: rgba(255,255,255,0.2); font-size: 11px; margin: 0;">
+            Order #${order._id?.toString().slice(-8).toUpperCase()}
+          </p>
+        </div>
+
+      </div>
+    </body>
+    </html>
+  `;
+
+  await resend.emails.send({
+    from: "TeslaStore <orders@teslaapp.xyz>",
+    to: order.customerEmail,
+    subject: `${icon} Order Update — ${label} | #${order._id?.toString().slice(-8).toUpperCase()}`,
     html,
   });
 }
