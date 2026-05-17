@@ -15,6 +15,14 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
+  const navLinks = [
+    { label: "Models", href: "/models" },
+    { label: "Accessories", href: "/accessories" },
+    { label: "Track Order", href: "/order/track" },
+    { label: "Features", href: "/#features" },
+    { label: "About", href: "/#about" },
+  ];
+
   return (
     <nav
       style={{
@@ -52,8 +60,12 @@ export default function Navbar() {
 
         {/* Desktop Nav */}
         <div style={{ display: "flex", alignItems: "center", gap: "2rem" }} className="desktop-nav">
-          {[{ label: "Models", href: "/models" }, { label: "Track Order", href: "/order/track" }, { label: "Features", href: "/#features" }].map((item) => (
-            <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
+          {navLinks.map((item) => (
+            <Link
+              key={item.label}
+              href={item.href}
+              style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}
+            >
               {item.label}
             </Link>
           ))}
@@ -61,46 +73,21 @@ export default function Navbar() {
 
         {/* Desktop Right */}
         <div style={{ display: "flex", alignItems: "center", gap: "1rem" }} className="desktop-nav">
-          <Link href="/auth/login" style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
+          <Link
+            href="/auth/login"
+            style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}
+          >
             Sign In
           </Link>
 
-          {/* Cart Button */}
+          {/* Cart */}
           <button
             onClick={() => setCartOpen(true)}
-            style={{
-              position: "relative",
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "#fff",
-              width: "2.25rem",
-              height: "2.25rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1rem",
-            }}
+            style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}
           >
             🛒
             {cartCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  background: "#E31937",
-                  color: "#fff",
-                  fontSize: "0.6rem",
-                  fontWeight: 700,
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+              <span style={{ position: "absolute", top: "-6px", right: "-6px", background: "#E31937", color: "#fff", fontSize: "0.6rem", fontWeight: 700, width: "16px", height: "16px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {cartCount}
               </span>
             )}
@@ -115,42 +102,14 @@ export default function Navbar() {
         </div>
 
         {/* Mobile Right */}
-        <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }} className="mobile-nav">
+        <div style={{ display: "none", alignItems: "center", gap: "0.75rem" }} className="mobile-nav">
           <button
             onClick={() => setCartOpen(true)}
-            style={{
-              position: "relative",
-              background: "rgba(255,255,255,0.08)",
-              border: "1px solid rgba(255,255,255,0.12)",
-              color: "#fff",
-              width: "2.25rem",
-              height: "2.25rem",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
-              fontSize: "1rem",
-            }}
+            style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}
           >
             🛒
             {cartCount > 0 && (
-              <span
-                style={{
-                  position: "absolute",
-                  top: "-6px",
-                  right: "-6px",
-                  background: "#E31937",
-                  color: "#fff",
-                  fontSize: "0.6rem",
-                  fontWeight: 700,
-                  width: "16px",
-                  height: "16px",
-                  borderRadius: "50%",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
+              <span style={{ position: "absolute", top: "-6px", right: "-6px", background: "#E31937", color: "#fff", fontSize: "0.6rem", fontWeight: 700, width: "16px", height: "16px", borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 {cartCount}
               </span>
             )}
@@ -175,19 +134,29 @@ export default function Navbar() {
       {menuOpen && (
         <div style={{ background: "rgba(0,0,0,0.98)", borderTop: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem" }}>
           <div style={{ display: "flex", flexDirection: "column", gap: "1.25rem" }}>
-            {[{ label: "Models", href: "/models" }, { label: "Track Order", href: "/order/track" }, { label: "Features", href: "/#features" }].map((item) => (
-  <Link
-    key={item.label}
-    href={item.href}
-    onClick={() => setMenuOpen(false)} style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}>
+            {navLinks.map((item) => (
+              <Link
+                key={item.label}
+                href={item.href}
+                onClick={() => setMenuOpen(false)}
+                style={{ color: "rgba(255,255,255,0.8)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}
+              >
                 {item.label}
               </Link>
             ))}
             <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "1.25rem", display: "flex", flexDirection: "column", gap: "1rem" }}>
-              <Link href="/auth/login" onClick={() => setMenuOpen(false)} style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none", textAlign: "center" }}>
+              <Link
+                href="/auth/login"
+                onClick={() => setMenuOpen(false)}
+                style={{ color: "rgba(255,255,255,0.6)", fontSize: "0.875rem", letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none", textAlign: "center" }}
+              >
                 Sign In
               </Link>
-              <Link href="/models" onClick={() => setMenuOpen(false)} style={{ padding: "0.875rem", background: "#E31937", color: "#fff", fontSize: "0.875rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none", textAlign: "center" }}>
+              <Link
+                href="/models"
+                onClick={() => setMenuOpen(false)}
+                style={{ padding: "0.875rem", background: "#E31937", color: "#fff", fontSize: "0.875rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none", textAlign: "center" }}
+              >
                 Order Now
               </Link>
             </div>
@@ -199,7 +168,6 @@ export default function Navbar() {
         .desktop-nav { display: flex !important; }
         .mobile-nav { display: none !important; }
         .mobile-menu-btn { display: none !important; }
-
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-nav { display: flex !important; }

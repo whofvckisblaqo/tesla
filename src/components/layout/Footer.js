@@ -27,19 +27,11 @@ export default function Footer() {
           flex-wrap: wrap;
         }
         @media (max-width: 768px) {
-          .footer-grid {
-            grid-template-columns: 1fr 1fr;
-          }
+          .footer-grid { grid-template-columns: 1fr 1fr; }
         }
         @media (max-width: 480px) {
-          .footer-grid {
-            grid-template-columns: 1fr;
-            gap: 2rem;
-          }
-          .footer-bottom {
-            flex-direction: column;
-            align-items: flex-start;
-          }
+          .footer-grid { grid-template-columns: 1fr; gap: 2rem; }
+          .footer-bottom { flex-direction: column; align-items: flex-start; }
         }
       `}</style>
 
@@ -53,7 +45,9 @@ export default function Footer() {
                 <svg width="22" height="22" viewBox="0 0 342 512" fill="white">
                   <path d="M0 0l171 512L342 0H216l-45 236L126 0H0zm171 57l36 193H135L171 57z" />
                 </svg>
-                <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>Tesla</span>
+                <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>
+                  Tesla
+                </span>
               </div>
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.875rem", lineHeight: 1.7, maxWidth: "220px" }}>
                 Accelerating the world&apos;s transition to sustainable energy.
@@ -62,19 +56,30 @@ export default function Footer() {
 
             {/* Vehicles */}
             <div>
-              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>Vehicles</p>
+              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>
+                Vehicles
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {["Model S", "Model 3", "Model X", "Model Y", "Cybertruck"].map((v) => (
-                  <Link key={v} href={`/models/${v.toLowerCase().replace(" ", "-")}`} style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
+                  <Link
+                    key={v}
+                    href={`/models/${v.toLowerCase().replace(" ", "-")}`}
+                    style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}
+                  >
                     {v}
                   </Link>
                 ))}
+                <Link href="/accessories" style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
+                  Accessories
+                </Link>
               </div>
             </div>
 
             {/* Company */}
             <div>
-              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>Company</p>
+              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>
+                Company
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {["About Us", "Careers", "Press", "Contact"].map((item) => (
                   <Link key={item} href="#" style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
@@ -86,11 +91,19 @@ export default function Footer() {
 
             {/* Support */}
             <div>
-              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>Support</p>
+              <p style={{ color: "#fff", fontSize: "0.7rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1.25rem", fontWeight: 700 }}>
+                Support
+              </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {["FAQ", "Find Us", "Service Centers", "Charging"].map((item) => (
-                  <Link key={item} href="#" style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
-                    {item}
+                {[
+                  { label: "FAQ", href: "#" },
+                  { label: "Find Us", href: "#" },
+                  { label: "Service Centers", href: "#" },
+                  { label: "Charging", href: "#" },
+                  { label: "Track Order", href: "/order/track" },
+                ].map((item) => (
+                  <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
+                    {item.label}
                   </Link>
                 ))}
               </div>
