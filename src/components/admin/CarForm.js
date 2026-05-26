@@ -119,6 +119,14 @@ export default function CarForm({ car, onSave, onCancel }) {
     }));
   };
 
+  const setMainImage = (index) => {
+    setForm((prev) => {
+      const imgs = [...prev.images];
+      const [picked] = imgs.splice(index, 1);
+      return { ...prev, images: [picked, ...imgs] };
+    });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -283,8 +291,16 @@ export default function CarForm({ car, onSave, onCancel }) {
                   >
                     ✕
                   </button>
-                  {i === 0 && (
+                  {i === 0 ? (
                     <span style={{ position: "absolute", bottom: "4px", left: "4px", background: "rgba(0,0,0,0.8)", color: "#10B981", fontSize: "0.55rem", padding: "2px 6px", letterSpacing: "0.1em", textTransform: "uppercase" }}>Main</span>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => setMainImage(i)}
+                      style={{ position: "absolute", bottom: "4px", left: "4px", background: "rgba(0,0,0,0.75)", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", fontSize: "0.5rem", padding: "2px 6px", letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}
+                    >
+                      Set Main
+                    </button>
                   )}
                 </div>
               ))}
