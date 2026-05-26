@@ -2,10 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
+import { signIn } from "next-auth/react";
 
 export default function SignupPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [form, setForm] = useState({ name: "", email: "", password: "", confirm: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -48,7 +51,16 @@ export default function SignupPage() {
       if (!res.ok) {
         setError(data.message || "Signup failed");
       } else {
-        router.push("/auth/login?registered=true");
+        const signInRes = await signIn("credentials", {
+          email: form.email,
+          password: form.password,
+          redirect: false,
+        });
+        if (signInRes?.error) {
+          router.push(`/auth/login?registered=true&callbackUrl=${encodeURIComponent(callbackUrl)}`);
+        } else {
+          router.push(callbackUrl);
+        }
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -249,7 +261,7 @@ export default function SignupPage() {
           {/* Sign In Link */}
           <p style={{ textAlign: "center", fontSize: "0.8rem", color: "rgba(255,255,255,0.4)", marginTop: "1.75rem" }}>
             Already have an account?{" "}
-            <Link href="/auth/login" style={{ color: "#E31937", textDecoration: "none", fontWeight: 600 }}>
+            <Link href={`/auth/login?callbackUrl=${encodeURIComponent(callbackUrl)}`} style={{ color: "#E31937", textDecoration: "none", fontWeight: 600 }}>
               Sign in
             </Link>
           </p>

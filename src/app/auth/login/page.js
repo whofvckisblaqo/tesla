@@ -3,10 +3,12 @@
 import { useState } from "react";
 import Link from "next/link";
 import { signIn } from "next-auth/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const [form, setForm] = useState({ email: "", password: "" });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,7 +33,7 @@ export default function LoginPage() {
       if (res?.error) {
         setError(res.error);
       } else {
-        router.push("/dashboard");
+        router.push(callbackUrl);
       }
     } catch (err) {
       setError("Something went wrong. Please try again.");
@@ -241,7 +243,7 @@ export default function LoginPage() {
           {/* Sign Up Link */}
           <p style={{ textAlign: "center", fontSize: "0.8rem", color: "rgba(255,255,255,0.4)" }}>
             Don&apos;t have an account?{" "}
-            <Link href="/auth/signup" style={{ color: "#E31937", textDecoration: "none", fontWeight: 600 }}>
+            <Link href={`/auth/signup?callbackUrl=${encodeURIComponent(callbackUrl)}`} style={{ color: "#E31937", textDecoration: "none", fontWeight: 600 }}>
               Create one
             </Link>
           </p>

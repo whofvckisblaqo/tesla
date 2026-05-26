@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation";
 
 export default function CheckoutPage() {
   const { cartItems, cartTotal, clearCart } = useCart();
-  const { data: session } = useSession();
+  const { data: session, status } = useSession();
   const router = useRouter();
   const orderSubmitted = useRef(false);
 
@@ -120,6 +120,84 @@ export default function CheckoutPage() {
       setLoading(false);
     }
   };
+
+  if (status === "loading") {
+    return (
+      <main style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <p style={{ color: "rgba(255,255,255,0.3)", letterSpacing: "0.2em", fontSize: "0.875rem" }}>Loading...</p>
+      </main>
+    );
+  }
+
+  if (status === "unauthenticated") {
+    return (
+      <main style={{ background: "#000", minHeight: "100vh" }}>
+        <Navbar />
+        <div style={{ maxWidth: "40rem", margin: "0 auto", padding: "clamp(6rem, 14vw, 10rem) clamp(1rem, 4vw, 1.5rem) 5rem", textAlign: "center" }}>
+
+          {/* Lock icon */}
+          <div style={{ width: "4rem", height: "4rem", margin: "0 auto 2rem", background: "rgba(227,25,55,0.08)", border: "1px solid rgba(227,25,55,0.2)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#E31937" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+              <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+            </svg>
+          </div>
+
+          <p style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.4em", textTransform: "uppercase", marginBottom: "1rem" }}>
+            Sign In Required
+          </p>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.75rem, 5vw, 2.5rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase", lineHeight: 1.1, marginBottom: "1.25rem" }}>
+            Continue to Checkout
+          </h1>
+          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.95rem", lineHeight: 1.7, marginBottom: "2.5rem" }}>
+            You need to sign in or create an account before completing your purchase. Your cart will be saved.
+          </p>
+
+          {/* Cart preview */}
+          {cartItems.length > 0 && (
+            <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.25rem", marginBottom: "2.5rem", textAlign: "left" }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1rem" }}>Your Cart</p>
+              {cartItems.map((item, i) => (
+                <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: "1rem", paddingBottom: i < cartItems.length - 1 ? "0.75rem" : 0, marginBottom: i < cartItems.length - 1 ? "0.75rem" : 0, borderBottom: i < cartItems.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none" }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem", fontFamily: "Georgia, serif", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
+                    <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.15rem" }}>Qty: {item.quantity}</p>
+                  </div>
+                  <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem", flexShrink: 0 }}>${(item.price * item.quantity).toLocaleString()}</p>
+                </div>
+              ))}
+              <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: "0.875rem", marginTop: "0.875rem", display: "flex", justifyContent: "space-between" }}>
+                <span style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem" }}>Total</span>
+                <span style={{ color: "#fff", fontWeight: 800, fontSize: "1rem" }}>${cartTotal.toLocaleString()}</span>
+              </div>
+            </div>
+          )}
+
+          {/* CTA buttons */}
+          <div style={{ display: "flex", flexDirection: "column", gap: "0.875rem" }}>
+            <a
+              href="/auth/login?callbackUrl=/checkout"
+              style={{ display: "block", padding: "1rem", background: "#E31937", color: "#fff", fontSize: "0.875rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}
+            >
+              Sign In
+            </a>
+            <a
+              href="/auth/signup?callbackUrl=/checkout"
+              style={{ display: "block", padding: "1rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: "0.875rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}
+            >
+              Create Account
+            </a>
+          </div>
+
+          <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", marginTop: "1.5rem" }}>
+            Already have an account?{" "}
+            <a href="/auth/login?callbackUrl=/checkout" style={{ color: "rgba(255,255,255,0.4)", textDecoration: "underline" }}>Sign in here</a>
+          </p>
+        </div>
+        <Footer />
+      </main>
+    );
+  }
 
   const inputStyle = {
     width: "100%",
