@@ -73,7 +73,7 @@ export default function AccessibilityPage() {
           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", lineHeight: 1.7, marginBottom: "1rem" }}>
             If you encounter an accessibility barrier on our website, please let us know. We take all reports seriously and aim to resolve issues within 5 business days.
           </p>
-          <a href="mailto:accessibility@teslastore.com" style={{ color: "#E31937", fontSize: "0.9rem", textDecoration: "none" }}>accessibility@teslastore.com</a>
+          <a href="mailto:teslasuppport@outlook.com" style={{ color: "#E31937", fontSize: "0.9rem", textDecoration: "none" }}>teslasuppport@outlook.com</a>
         </div>
       </section>
 

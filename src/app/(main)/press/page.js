@@ -57,7 +57,7 @@ export default function PressPage() {
           </div>
           <div style={{ border: "1px solid rgba(255,255,255,0.08)", padding: "2rem" }}>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.5rem" }}>Email</p>
-            <p style={{ color: "#fff", fontSize: "1rem", marginBottom: "1.5rem" }}>press@teslastore.com</p>
+            <p style={{ color: "#fff", fontSize: "1rem", marginBottom: "1.5rem" }}>teslasuppport@outlook.com</p>
             <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.5rem" }}>Response Time</p>
             <p style={{ color: "#fff", fontSize: "1rem" }}>Within 24 business hours</p>
           </div>

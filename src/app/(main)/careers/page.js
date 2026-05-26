@@ -33,7 +33,7 @@ export default function CareersPage() {
           <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "clamp(1rem, 2vw, 1.2rem)", lineHeight: 1.8, fontWeight: 300 }}>
             Work on problems that matter. Tesla is hiring passionate people who want to accelerate the world's transition to sustainable energy.
           </p>
-          <a href="mailto:careers@teslastore.com" style={{ display: "inline-block", marginTop: "2rem", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}>
+          <a href="mailto:teslasuppport@outlook.com" style={{ display: "inline-block", marginTop: "2rem", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}>
             View Open Roles
           </a>
         </div>
@@ -80,7 +80,7 @@ export default function CareersPage() {
       <section style={{ maxWidth: "80rem", margin: "0 auto", padding: "5rem 1.5rem", textAlign: "center" }}>
         <h2 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.5rem, 4vw, 2.5rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase", marginBottom: "1rem" }}>Ready to Apply?</h2>
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.95rem", marginBottom: "2rem" }}>Send your resume and portfolio to our hiring team.</p>
-        <a href="mailto:careers@teslastore.com" style={{ display: "inline-block", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}>
+        <a href="mailto:teslasuppport@outlook.com" style={{ display: "inline-block", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}>
           careers@teslastore.com
         </a>
       </section>

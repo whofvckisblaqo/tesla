@@ -44,7 +44,7 @@ export default function TermsPage() {
           ))}
         </div>
         <div style={{ marginTop: "3rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "2rem" }}>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.85rem" }}>For legal inquiries, contact us at <a href="mailto:legal@teslastore.com" style={{ color: "#E31937" }}>legal@teslastore.com</a></p>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.85rem" }}>For legal inquiries, contact us at <a href="mailto:teslasuppport@outlook.com" style={{ color: "#E31937" }}>teslasuppport@outlook.com</a></p>
         </div>
       </section>
 

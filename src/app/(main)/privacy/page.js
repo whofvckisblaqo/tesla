@@ -7,7 +7,7 @@ const sections = [
   { title: "Cookies & Tracking", body: "We use cookies and similar technologies to enable site functionality, remember your preferences, and analyse traffic. You can control cookie settings through your browser. Disabling certain cookies may affect site functionality. We use Google Analytics in anonymised form." },
   { title: "Data Sharing", body: "We share your data only with service providers who assist in operating our business (payment processors, logistics partners, cloud infrastructure), and only to the extent necessary to provide those services. All partners are bound by confidentiality agreements. We may disclose data if required by law." },
   { title: "Data Retention", body: "We retain your personal data for as long as necessary to fulfil the purposes for which it was collected, including for legal, accounting, or reporting requirements. Order data is retained for 7 years. You may request deletion of your account and associated data at any time." },
-  { title: "Your Rights", body: "Depending on your jurisdiction, you have rights to access, correct, delete, or export your personal data. You also have the right to withdraw consent and opt out of marketing at any time. To exercise these rights, contact us at privacy@teslastore.com." },
+  { title: "Your Rights", body: "Depending on your jurisdiction, you have rights to access, correct, delete, or export your personal data. You also have the right to withdraw consent and opt out of marketing at any time. To exercise these rights, contact us at teslasuppport@outlook.com." },
   { title: "Security", body: "We implement industry-standard security measures including TLS encryption, tokenised payment processing, and regular security audits. No system is completely secure; we encourage you to use a strong password and protect your account credentials." },
   { title: "Children's Privacy", body: "Our services are not directed to individuals under 18. We do not knowingly collect personal information from minors. If we become aware that we have inadvertently collected such data, we will delete it promptly." },
   { title: "Changes to This Policy", body: "We may update this policy periodically. We'll notify you of material changes by email or through a notice on our website. The date of the most recent revision is shown at the top of this page." },
@@ -42,7 +42,7 @@ export default function PrivacyPage() {
           ))}
         </div>
         <div style={{ marginTop: "3rem", borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: "2rem" }}>
-          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.85rem" }}>For privacy-related questions, contact us at <a href="mailto:privacy@teslastore.com" style={{ color: "#E31937" }}>privacy@teslastore.com</a></p>
+          <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.85rem" }}>For privacy-related questions, contact us at <a href="mailto:teslasuppport@outlook.com" style={{ color: "#E31937" }}>teslasuppport@outlook.com</a></p>
         </div>
       </section>
 
