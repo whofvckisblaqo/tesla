@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import TeslaLogo from "@/components/shared/TeslaLogo";
 
 export default function Footer() {
   return (
@@ -43,7 +42,12 @@ export default function Footer() {
             {/* Brand */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
-                <TeslaLogo height={18} />
+                <svg width="22" height="22" viewBox="0 0 342 512" fill="white">
+                  <path d="M0 0l171 512L342 0H216l-45 236L126 0H0zm171 57l36 193H135L171 57z" />
+                </svg>
+                <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>
+                  Tesla
+                </span>
               </div>
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.875rem", lineHeight: 1.7, maxWidth: "220px" }}>
                 Accelerating the world&apos;s transition to sustainable energy.

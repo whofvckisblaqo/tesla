@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
-import TeslaLogo from "@/components/shared/TeslaLogo";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
@@ -51,7 +50,12 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}>
-          <TeslaLogo height={18} />
+          <svg width="24" height="24" viewBox="0 0 342 512" fill="white">
+            <path d="M0 0l171 512L342 0H216l-45 236L126 0H0zm171 57l36 193H135L171 57z" />
+          </svg>
+          <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>
+            Tesla
+          </span>
         </Link>
 
         {/* Desktop Nav */}
