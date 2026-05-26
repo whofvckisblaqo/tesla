@@ -17,7 +17,7 @@ export default function TestDriveSection() {
         {/* Video */}
         <div style={{ position: "relative", width: "100%", maxWidth: "900px", margin: "0 auto", aspectRatio: "16/9", background: "#111", border: "1px solid rgba(255,255,255,0.08)" }}>
           <iframe
-            src="https://www.youtube.com/embed/h78gfwG5BXs?rel=0&modestbranding=1"
+            src="https://www.youtube.com/embed/1mFz3PYTwx8?rel=0&modestbranding=1"
             title="Tesla Test Drive"
             allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
             allowFullScreen
