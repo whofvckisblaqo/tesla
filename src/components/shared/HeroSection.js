@@ -2,38 +2,25 @@
 
 import { useEffect, useState } from "react";
 
-const slides = [
-  {
-    model: "Model S",
-    tagline: "Plaid Performance",
-    subtitle: "0–60 mph in 1.99s. The quickest production car ever made.",
-    image: "https://images.unsplash.com/photo-1658030074520-74e1acd0865c?w=1600&q=80",
-    accent: "#E31937",
-    slug: "model-s",
-  },
-  {
-    model: "Model 3",
-    tagline: "Built for Everyday",
-    subtitle: "Award-winning safety. Up to 358 miles of range.",
-    image: "https://images.unsplash.com/photo-1685270386994-ae66d13d021e?w=1600&q=80",
-    accent: "#3B82F6",
-    slug: "model-3",
-  },
-  {
-    model: "Cybertruck",
-    tagline: "The Future of Utility",
-    subtitle: "Exoskeleton body. 500+ miles range. Unmatched towing capacity.",
-    image: "https://images.unsplash.com/photo-1705771801928-4fceafdd6e55?w=1600&q=80",
-    accent: "#9CA3AF",
-    slug: "cybertruck",
-  },
-];
+const ACCENT = "#E31937";
 
 export default function HeroSection() {
+  const [slides, setSlides] = useState([]);
   const [current, setCurrent] = useState(0);
   const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
+    fetch("/api/cars")
+      .then((r) => r.json())
+      .then((data) => {
+        const featured = (data.cars || []).filter((c) => c.featured);
+        setSlides(featured);
+      })
+      .catch(() => {});
+  }, []);
+
+  useEffect(() => {
+    if (slides.length < 2) return;
     const timer = setInterval(() => {
       setAnimating(true);
       setTimeout(() => {
@@ -42,7 +29,7 @@ export default function HeroSection() {
       }, 400);
     }, 5000);
     return () => clearInterval(timer);
-  }, []);
+  }, [slides]);
 
   const slide = slides[current];
 
@@ -170,7 +157,7 @@ export default function HeroSection() {
         <div
           style={{
             position: "absolute", inset: 0,
-            backgroundImage: `url(${slide.image})`,
+            backgroundImage: slide?.images?.[0] ? `url(${slide.images[0]})` : "none",
             backgroundSize: "cover", backgroundPosition: "center",
             opacity: animating ? 0 : 1,
             transition: "opacity 0.6s ease",
@@ -180,52 +167,60 @@ export default function HeroSection() {
         {/* Gradient */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(to top, #000 0%, transparent 50%, #00000088 100%)" }} />
         {/* Glow */}
-        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 40% at 50% 70%, ${slide.accent}22 0%, transparent 70%)`, transition: "background 1s ease" }} />
+        <div style={{ position: "absolute", inset: 0, background: `radial-gradient(ellipse 60% 40% at 50% 70%, ${ACCENT}22 0%, transparent 70%)` }} />
 
         {/* Content */}
-        <div
-          className="hero-content"
-          style={{
-            opacity: animating ? 0 : 1,
-            transform: animating ? "translateY(20px)" : "translateY(0)",
-            transition: "all 0.4s ease",
-          }}
-        >
-          {/* Model Label */}
-          <div style={{ display: "inline-block", marginBottom: "1.25rem", padding: "0.35rem 1rem", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.4em", textTransform: "uppercase", border: `1px solid ${slide.accent}`, color: slide.accent }}>
-            {slide.model}
+        {slide && (
+          <div
+            className="hero-content"
+            style={{
+              opacity: animating ? 0 : 1,
+              transform: animating ? "translateY(20px)" : "translateY(0)",
+              transition: "all 0.4s ease",
+            }}
+          >
+            {/* Model Label */}
+            <div style={{ display: "inline-block", marginBottom: "1.25rem", padding: "0.35rem 1rem", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.4em", textTransform: "uppercase", border: `1px solid ${ACCENT}`, color: ACCENT }}>
+              {slide.name}
+            </div>
+
+            <h1 className="hero-title" style={{ textShadow: `0 0 80px ${ACCENT}44` }}>
+              {slide.tagline || slide.name}
+            </h1>
+
+            <p className="hero-subtitle">
+              {slide.description
+                ? slide.description.slice(0, 100) + (slide.description.length > 100 ? "…" : "")
+                : [slide.specs?.range && `${slide.specs.range} range`, slide.specs?.acceleration && `0–60 in ${slide.specs.acceleration}`].filter(Boolean).join(" · ")}
+            </p>
+
+            <div className="hero-buttons">
+              <a href={`/models/${slide.slug}`} className="hero-btn-primary" style={{ background: ACCENT }}>
+                Order Now
+              </a>
+              <a href={`/models/${slide.slug}`} className="hero-btn-secondary">
+                Learn More
+              </a>
+            </div>
+
+            {/* Dots */}
+            {slides.length > 1 && (
+              <div className="hero-dots">
+                {slides.map((_, i) => (
+                  <button
+                    key={i}
+                    onClick={() => setCurrent(i)}
+                    className="hero-dot"
+                    style={{
+                      width: i === current ? "2rem" : "0.5rem",
+                      background: i === current ? ACCENT : "rgba(255,255,255,0.3)",
+                    }}
+                  />
+                ))}
+              </div>
+            )}
           </div>
-
-          <h1 className="hero-title" style={{ textShadow: `0 0 80px ${slide.accent}44` }}>
-            {slide.tagline}
-          </h1>
-
-          <p className="hero-subtitle">{slide.subtitle}</p>
-
-          <div className="hero-buttons">
-            <a href={`/models/${slide.slug}`} className="hero-btn-primary" style={{ background: slide.accent }}>
-              Order Now
-            </a>
-            <a href={`/models/${slide.slug}`} className="hero-btn-secondary">
-              Learn More
-            </a>
-          </div>
-
-          {/* Dots */}
-          <div className="hero-dots">
-            {slides.map((s, i) => (
-              <button
-                key={i}
-                onClick={() => setCurrent(i)}
-                className="hero-dot"
-                style={{
-                  width: i === current ? "2rem" : "0.5rem",
-                  background: i === current ? slide.accent : "rgba(255,255,255,0.3)",
-                }}
-              />
-            ))}
-          </div>
-        </div>
+        )}
 
         {/* Scroll */}
         <div className="hero-scroll">

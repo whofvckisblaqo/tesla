@@ -61,7 +61,7 @@ export default function ModelsSection() {
   useEffect(() => {
     fetch("/api/cars")
       .then((r) => r.json())
-      .then((data) => setModels(data.cars || []))
+      .then((data) => setModels((data.cars || []).filter((c) => c.featured)))
       .catch(() => {});
   }, []);
 
