@@ -81,9 +81,14 @@ export default function Footer() {
                 Company
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {["About Us", "Careers", "Press", "Contact"].map((item) => (
-                  <Link key={item} href="#" style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
-                    {item}
+                {[
+                  { label: "About Us", href: "/about" },
+                  { label: "Careers", href: "/careers" },
+                  { label: "Press", href: "/press" },
+                  { label: "Contact", href: "/contact" },
+                ].map((item) => (
+                  <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
+                    {item.label}
                   </Link>
                 ))}
               </div>
@@ -96,10 +101,10 @@ export default function Footer() {
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
                 {[
-                  { label: "FAQ", href: "#" },
-                  { label: "Find Us", href: "#" },
-                  { label: "Service Centers", href: "#" },
-                  { label: "Charging", href: "#" },
+                  { label: "FAQ", href: "/faq" },
+                  { label: "Find Us", href: "/find-us" },
+                  { label: "Service Centers", href: "/service-centers" },
+                  { label: "Charging", href: "/charging" },
                   { label: "Track Order", href: "/order/track" },
                 ].map((item) => (
                   <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}>
@@ -116,9 +121,13 @@ export default function Footer() {
               © {new Date().getFullYear()} TeslaStore. All rights reserved.
             </p>
             <div className="footer-links">
-              {["Privacy", "Terms", "Accessibility"].map((item) => (
-                <Link key={item} href="#" style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none" }}>
-                  {item}
+              {[
+                { label: "Privacy", href: "/privacy" },
+                { label: "Terms", href: "/terms" },
+                { label: "Accessibility", href: "/accessibility" },
+              ].map((item) => (
+                <Link key={item.label} href={item.href} style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.75rem", textDecoration: "none" }}>
+                  {item.label}
                 </Link>
               ))}
             </div>
