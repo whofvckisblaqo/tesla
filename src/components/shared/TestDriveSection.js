@@ -28,7 +28,7 @@ export default function TestDriveSection() {
         {/* CTA */}
         <div style={{ textAlign: "center", marginTop: "2.5rem" }}>
           <a
-            href="/find-us"
+            href="/test-drive"
             style={{ display: "inline-block", padding: "0.875rem 2.5rem", background: "#E31937", color: "#fff", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", textDecoration: "none" }}
           >
             Book a Test Drive
