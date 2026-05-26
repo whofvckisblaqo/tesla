@@ -39,6 +39,7 @@ export default function CarForm({ car, onSave, onCancel }) {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState("");
   const [uploadProgress, setUploadProgress] = useState("");
+  const [urlInput, setUrlInput] = useState("");
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -102,6 +103,13 @@ export default function CarForm({ car, onSave, onCancel }) {
     } finally {
       setUploading(false);
     }
+  };
+
+  const addImageUrl = () => {
+    const trimmed = urlInput.trim();
+    if (!trimmed) return;
+    setForm((prev) => ({ ...prev, images: [...prev.images, trimmed] }));
+    setUrlInput("");
   };
 
   const removeImage = (index) => {
@@ -239,6 +247,28 @@ export default function CarForm({ car, onSave, onCancel }) {
           {uploadProgress && !uploading && (
             <p style={{ color: "#10B981", fontSize: "0.8rem", marginBottom: "1rem" }}>{uploadProgress}</p>
           )}
+
+          {/* URL input */}
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+            <input
+              type="url"
+              value={urlInput}
+              onChange={(e) => setUrlInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && (e.preventDefault(), addImageUrl())}
+              placeholder="Or paste an image URL and click Add"
+              style={{ ...inputStyle, flex: 1 }}
+              onFocus={(e) => (e.target.style.borderColor = "#E31937")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+            />
+            <button
+              type="button"
+              onClick={addImageUrl}
+              disabled={!urlInput.trim()}
+              style={{ padding: "0.75rem 1.25rem", background: urlInput.trim() ? "#E31937" : "rgba(255,255,255,0.06)", border: "none", color: "#fff", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: urlInput.trim() ? "pointer" : "not-allowed", whiteSpace: "nowrap" }}
+            >
+              Add
+            </button>
+          </div>
 
           {/* Image Previews */}
           {form.images.length > 0 && (
