@@ -1,4 +1,5 @@
 import { Inter } from "next/font/google";
+import Script from "next/script";
 import "./globals.css";
 import SessionWrapper from "@/components/shared/SessionWrapper";
 import { CartProvider } from "@/context/CartContext";
@@ -21,6 +22,11 @@ export default function RootLayout({ children }) {
             <CartDrawer />
           </CartProvider>
         </SessionWrapper>
+        <Script
+          src="https://embed.tawk.to/6a1590abed91441c326ca667/1jpi3q7v5"
+          strategy="afterInteractive"
+          crossOrigin="*"
+        />
       </body>
     </html>
   );
