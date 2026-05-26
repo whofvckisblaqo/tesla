@@ -27,7 +27,7 @@ export default function CheckoutPage() {
     country: "",
   });
 
-  const hasCarItems = cartItems.some((i) => i.type === "car" || !i.type);
+  const hasCarItems = cartItems.some((i) => i.type === "car" || i.type === "robot" || !i.type);
 
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [loanTerm, setLoanTerm] = useState(60);
