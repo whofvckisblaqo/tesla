@@ -56,6 +56,10 @@ export default function AdminPage() {
   const [seedingRobots, setSeedingRobots] = useState(false);
   const [seedRobotMessage, setSeedRobotMessage] = useState("");
 
+  // Review states
+  const [seedingReviews, setSeedingReviews] = useState(false);
+  const [seedReviewMessage, setSeedReviewMessage] = useState("");
+
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
@@ -196,6 +200,20 @@ export default function AdminPage() {
       setRobots((prev) => prev.filter((r) => r._id !== id));
     } catch (err) {
       console.error(err);
+    }
+  };
+
+  const seedReviewsDb = async () => {
+    setSeedingReviews(true);
+    setSeedReviewMessage("");
+    try {
+      const res = await fetch("/api/reviews/seed");
+      const data = await res.json();
+      setSeedReviewMessage(data.message);
+    } catch (err) {
+      setSeedReviewMessage("Seed failed: " + err.message);
+    } finally {
+      setSeedingReviews(false);
     }
   };
 
@@ -480,6 +498,15 @@ export default function AdminPage() {
                 ✅ {seedMessage}
               </div>
             )}
+
+            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
+              <button onClick={seedReviewsDb} disabled={seedingReviews} style={{ padding: "0.5rem 1rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: seedingReviews ? "not-allowed" : "pointer" }}>
+                {seedingReviews ? "Seeding..." : "🌱 Seed Default Reviews"}
+              </button>
+              {seedReviewMessage && (
+                <span style={{ color: "#10B981", fontSize: "0.75rem" }}>✅ {seedReviewMessage}</span>
+              )}
+            </div>
 
             {showCarForm && (
               <div style={{ marginBottom: "2rem" }}>
