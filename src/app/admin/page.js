@@ -6,6 +6,7 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import CarForm from "@/components/admin/CarForm";
 import AccessoryForm from "@/components/admin/AccessoryForm";
+import RobotForm from "@/components/admin/RobotForm";
 
 const STATUS_COLORS = {
   pending_payment: "#F59E0B",
@@ -31,6 +32,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [cars, setCars] = useState([]);
   const [accessories, setAccessories] = useState([]);
+  const [robots, setRobots] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [updatingId, setUpdatingId] = useState(null);
@@ -47,6 +49,12 @@ export default function AdminPage() {
   const [editingAccessory, setEditingAccessory] = useState(null);
   const [seedingAccessories, setSeedingAccessories] = useState(false);
   const [seedAccessoryMessage, setSeedAccessoryMessage] = useState("");
+
+  // Robot states
+  const [showRobotForm, setShowRobotForm] = useState(false);
+  const [editingRobot, setEditingRobot] = useState(null);
+  const [seedingRobots, setSeedingRobots] = useState(false);
+  const [seedRobotMessage, setSeedRobotMessage] = useState("");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -72,20 +80,23 @@ export default function AdminPage() {
 
   const fetchData = async () => {
     try {
-      const [ordersRes, usersRes, carsRes, accessoriesRes] = await Promise.all([
+      const [ordersRes, usersRes, carsRes, accessoriesRes, robotsRes] = await Promise.all([
         fetch("/api/admin/orders"),
         fetch("/api/admin/users"),
         fetch("/api/cars"),
         fetch("/api/accessories"),
+        fetch("/api/robots"),
       ]);
       const ordersData = await ordersRes.json();
       const usersData = await usersRes.json();
       const carsData = await carsRes.json();
       const accessoriesData = await accessoriesRes.json();
+      const robotsData = await robotsRes.json();
       setOrders(ordersData.orders || []);
       setUsers(usersData.users || []);
       setCars(carsData.cars || []);
       setAccessories(accessoriesData.accessories || []);
+      setRobots(robotsData.robots || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -163,6 +174,31 @@ export default function AdminPage() {
     }
   };
 
+  const seedRobotsDb = async () => {
+    setSeedingRobots(true);
+    setSeedRobotMessage("");
+    try {
+      const res = await fetch("/api/robots/seed");
+      const data = await res.json();
+      setSeedRobotMessage(data.message);
+      fetchData();
+    } catch (err) {
+      setSeedRobotMessage("Seed failed: " + err.message);
+    } finally {
+      setSeedingRobots(false);
+    }
+  };
+
+  const deleteRobot = async (id) => {
+    if (!confirm("Delete this robot?")) return;
+    try {
+      await fetch(`/api/robots?id=${id}`, { method: "DELETE" });
+      setRobots((prev) => prev.filter((r) => r._id !== id));
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   if (status === "loading") {
     return (
       <main style={{ background: "#000", minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -177,7 +213,7 @@ export default function AdminPage() {
   const totalRevenue = orders.reduce((s, o) => s + (o.totalPrice || 0), 0);
   const pendingOrders = orders.filter((o) => o.status === "pending_payment").length;
 
-  const tabs = ["overview", "orders", "users", "cars", "accessories"];
+  const tabs = ["overview", "orders", "users", "cars", "accessories", "robots"];
 
   return (
     <main style={{ background: "#000", minHeight: "100vh" }}>
@@ -492,6 +528,88 @@ export default function AdminPage() {
                             Edit
                           </button>
                           <button onClick={() => deleteCar(car._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
+                            Delete
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ROBOTS TAB */}
+        {activeTab === "robots" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
+                <span style={{ color: "#fff", fontWeight: 700 }}>{robots.length}</span> robots in database
+              </p>
+              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                <button onClick={seedRobotsDb} disabled={seedingRobots} style={{ padding: "0.5rem 1rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: seedingRobots ? "not-allowed" : "pointer" }}>
+                  {seedingRobots ? "Seeding..." : "🌱 Seed Default Robots"}
+                </button>
+                <button onClick={() => { setShowRobotForm(true); setEditingRobot(null); }} style={{ padding: "0.5rem 1rem", background: "#E31937", border: "none", color: "#fff", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer" }}>
+                  + Add New Robot
+                </button>
+              </div>
+            </div>
+
+            {seedRobotMessage && (
+              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
+                ✅ {seedRobotMessage}
+              </div>
+            )}
+
+            {showRobotForm && (
+              <div style={{ marginBottom: "2rem" }}>
+                <RobotForm
+                  robot={editingRobot}
+                  onSave={() => { setShowRobotForm(false); setEditingRobot(null); fetchData(); }}
+                  onCancel={() => { setShowRobotForm(false); setEditingRobot(null); }}
+                />
+              </div>
+            )}
+
+            {robots.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🤖</div>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem", marginBottom: "1rem" }}>No robots in database</p>
+                <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.8rem" }}>Click &quot;Seed Default Robots&quot; to add all Optimus models</p>
+              </div>
+            ) : (
+              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
+                {robots.map((item) => (
+                  <div key={item._id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                    <div style={{ height: "120px", backgroundImage: item.image ? `url(${item.image})` : "none", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundColor: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                      {!item.image && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "2rem" }}>🤖</span>}
+                    </div>
+                    <div style={{ padding: "1rem" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
+                          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>{item.category}</p>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end", flexShrink: 0, marginLeft: "0.5rem" }}>
+                          <span style={{ padding: "0.2rem 0.5rem", background: item.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: item.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                            {item.inStock ? "In Stock" : "Coming Soon"}
+                          </span>
+                          {item.badge && (
+                            <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                              {item.badge}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+                        <p style={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}>${item.price?.toLocaleString()}</p>
+                        <div style={{ display: "flex", gap: "0.5rem" }}>
+                          <button onClick={() => { setEditingRobot(item); setShowRobotForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
+                            Edit
+                          </button>
+                          <button onClick={() => deleteRobot(item._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
                             Delete
                           </button>
                         </div>
