@@ -60,10 +60,10 @@ export default function Footer() {
                 Vehicles
               </p>
               <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
-                {["Model S", "Model 3", "Model X", "Model Y", "Cybertruck"].map((v) => (
+                {["Model S", "Model 3", "Model X", "Model Y", "Cybertruck", "Optimus"].map((v) => (
                   <Link
                     key={v}
-                    href={`/models/${v.toLowerCase().replace(" ", "-")}`}
+                    href={v === "Optimus" ? "/optimus" : `/models/${v.toLowerCase().replace(" ", "-")}`}
                     style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.875rem", textDecoration: "none" }}
                   >
                     {v}

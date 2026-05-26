@@ -17,10 +17,10 @@ export default function Navbar() {
 
   const navLinks = [
     { label: "Models", href: "/models" },
+    { label: "Optimus", href: "/optimus" },
     { label: "Accessories", href: "/accessories" },
     { label: "Track Order", href: "/order/track" },
-    { label: "Features", href: "/#features" },
-    { label: "About", href: "/#about" },
+    { label: "About", href: "/about" },
   ];
 
   return (
