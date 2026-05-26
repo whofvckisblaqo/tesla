@@ -203,7 +203,7 @@ export default function AccessoryForm({ accessory, onSave, onCancel }) {
           <label style={{ display: "flex", alignItems: "center", gap: "0.75rem", cursor: "pointer" }}>
             <div style={{ position: "relative", width: "40px", height: "22px" }}>
               <input type="checkbox" name="inStock" checked={form.inStock} onChange={handleChange} style={{ opacity: 0, width: 0, height: 0 }} />
-              <div style={{ position: "absolute", inset: 0, background: form.inStock ? "#E31937" : "rgba(255,255,255,0.1)", borderRadius: "11px", transition: "0.3s", cursor: "pointer" }} onClick={() => setForm((prev) => ({ ...prev, inStock: !prev.inStock }))} />
+              <div style={{ position: "absolute", inset: 0, background: form.inStock ? "#E31937" : "rgba(255,255,255,0.1)", borderRadius: "11px", transition: "0.3s", cursor: "pointer" }} />
               <div style={{ position: "absolute", top: "3px", left: form.inStock ? "21px" : "3px", width: "16px", height: "16px", background: "#fff", borderRadius: "50%", transition: "0.3s", pointerEvents: "none" }} />
             </div>
             <span style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem", letterSpacing: "0.1em", textTransform: "uppercase" }}>In Stock</span>
