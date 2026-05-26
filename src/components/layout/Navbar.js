@@ -51,10 +51,7 @@ export default function Navbar() {
       >
         {/* Logo */}
         <Link href="/" style={{ display: "flex", alignItems: "center", gap: "0.5rem", textDecoration: "none" }}>
-          <TeslaLogo width={24} height={24} />
-          <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>
-            Tesla
-          </span>
+          <TeslaLogo height={18} />
         </Link>
 
         {/* Desktop Nav */}

@@ -43,10 +43,7 @@ export default function Footer() {
             {/* Brand */}
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginBottom: "1.25rem" }}>
-                <TeslaLogo width={22} height={22} />
-                <span style={{ fontFamily: "Georgia, serif", letterSpacing: "0.3em", color: "#fff", fontWeight: 700, fontSize: "1rem", textTransform: "uppercase" }}>
-                  Tesla
-                </span>
+                <TeslaLogo height={18} />
               </div>
               <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.875rem", lineHeight: 1.7, maxWidth: "220px" }}>
                 Accelerating the world&apos;s transition to sustainable energy.
