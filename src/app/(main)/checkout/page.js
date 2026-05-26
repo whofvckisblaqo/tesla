@@ -27,6 +27,8 @@ export default function CheckoutPage() {
     country: "",
   });
 
+  const hasCarItems = cartItems.some((i) => i.type === "car" || !i.type);
+
   const [downPaymentPercent, setDownPaymentPercent] = useState(20);
   const [loanTerm, setLoanTerm] = useState(60);
   const [interestRate] = useState(9.9);
@@ -75,7 +77,7 @@ export default function CheckoutPage() {
       setError("Please fill in all fields");
       return;
     }
-    setStep(2);
+    setStep(hasCarItems ? 2 : 3);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
@@ -90,10 +92,10 @@ export default function CheckoutPage() {
         body: JSON.stringify({
           items: cartItems,
           totalPrice: cartTotal,
-          downPayment: downPaymentUSD,
-          monthlyPayment: downPaymentPercent < 100 ? monthlyPayment : 0,
-          loanTerm: downPaymentPercent < 100 ? loanTerm : 0,
-          interestRate: downPaymentPercent < 100 ? interestRate : 0,
+          downPayment: hasCarItems ? downPaymentUSD : cartTotal,
+          monthlyPayment: hasCarItems && downPaymentPercent < 100 ? monthlyPayment : 0,
+          loanTerm: hasCarItems && downPaymentPercent < 100 ? loanTerm : 0,
+          interestRate: hasCarItems && downPaymentPercent < 100 ? interestRate : 0,
           address: form.address,
           city: form.city,
           country: form.country,
@@ -243,8 +245,11 @@ export default function CheckoutPage() {
 
         {/* Step Indicators */}
         <div style={{ display: "flex", alignItems: "center", marginBottom: "2.5rem", overflowX: "auto", paddingBottom: "0.5rem" }}>
-          {[{ n: 1, label: "Details" }, { n: 2, label: "Payment Plan" }, { n: 3, label: "Confirm" }].map((s, i) => (
-            <div key={s.n} style={{ display: "flex", alignItems: "center", flex: i < 2 ? 1 : "auto" }}>
+          {(hasCarItems
+            ? [{ n: 1, label: "Details" }, { n: 2, label: "Payment Plan" }, { n: 3, label: "Confirm" }]
+            : [{ n: 1, label: "Details" }, { n: 3, label: "Confirm" }]
+          ).map((s, i, arr) => (
+            <div key={s.n} style={{ display: "flex", alignItems: "center", flex: i < arr.length - 1 ? 1 : "auto" }}>
               <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexShrink: 0 }}>
                 <div style={{
                   width: "1.75rem", height: "1.75rem", borderRadius: "50%",
@@ -253,7 +258,7 @@ export default function CheckoutPage() {
                   display: "flex", alignItems: "center", justifyContent: "center",
                   color: "#fff", fontSize: "0.7rem", fontWeight: 700, flexShrink: 0,
                 }}>
-                  {step > s.n ? "✓" : s.n}
+                  {step > s.n ? "✓" : i + 1}
                 </div>
                 <span style={{
                   color: step >= s.n ? "#fff" : "rgba(255,255,255,0.3)",
@@ -264,7 +269,7 @@ export default function CheckoutPage() {
                   {s.label}
                 </span>
               </div>
-              {i < 2 && (
+              {i < arr.length - 1 && (
                 <div style={{ flex: 1, height: "1px", background: step > s.n ? "#E31937" : "rgba(255,255,255,0.1)", margin: "0 0.5rem" }} />
               )}
             </div>
@@ -450,8 +455,8 @@ export default function CheckoutPage() {
                   </div>
                 </div>
 
-                {/* Payment Summary */}
-                <div style={{ marginBottom: "1.25rem" }}>
+                {/* Payment Summary — only for car orders */}
+                {hasCarItems && <div style={{ marginBottom: "1.25rem" }}>
                   <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.6rem" }}>
                     Payment Plan
                   </p>
@@ -478,7 +483,7 @@ export default function CheckoutPage() {
                       </div>
                     )}
                   </div>
-                </div>
+                </div>}
 
                 {/* Email Notice */}
                 <div style={{ background: "rgba(59,130,246,0.06)", border: "1px solid rgba(59,130,246,0.2)", padding: "1.1rem", marginBottom: "1.25rem", display: "flex", gap: "0.75rem", alignItems: "flex-start" }}>
@@ -495,7 +500,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div style={{ display: "flex", gap: "0.75rem" }}>
-                  <button onClick={() => { setStep(2); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ flex: 1, padding: "0.875rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
+                  <button onClick={() => { setStep(hasCarItems ? 2 : 1); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ flex: 1, padding: "0.875rem", background: "transparent", color: "#fff", border: "1px solid rgba(255,255,255,0.2)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
                     ← Back
                   </button>
                   <button
@@ -540,8 +545,8 @@ export default function CheckoutPage() {
               {[
                 { label: "Subtotal", value: `$${cartTotal.toLocaleString()}` },
                 { label: "Delivery", value: "Free", color: "#10B981" },
-                ...(step >= 2 ? [{ label: "Down Payment", value: `${downPaymentPercent}%`, color: "#E31937" }] : []),
-                ...(step >= 2 && downPaymentPercent < 100 ? [{ label: "Monthly", value: `$${monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo` }] : []),
+                ...(hasCarItems && step >= 2 ? [{ label: "Down Payment", value: `${downPaymentPercent}%`, color: "#E31937" }] : []),
+                ...(hasCarItems && step >= 2 && downPaymentPercent < 100 ? [{ label: "Monthly", value: `$${monthlyPayment.toLocaleString(undefined, { maximumFractionDigits: 0 })}/mo` }] : []),
               ].map((row) => (
                 <div key={row.label} style={{ display: "flex", justifyContent: "space-between", marginBottom: "0.5rem" }}>
                   <span style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.78rem" }}>{row.label}</span>

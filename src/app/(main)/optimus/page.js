@@ -26,6 +26,7 @@ function RobotCard({ item }) {
       color: "Standard",
       price: item.price,
       image: item.image,
+      type: "robot",
     });
     setAdded(true);
     setTimeout(() => setAdded(false), 2000);

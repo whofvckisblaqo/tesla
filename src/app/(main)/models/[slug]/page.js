@@ -120,6 +120,7 @@ export default function ModelDetailPage() {
       color: model.colors?.[selectedColor] || "Standard",
       price: model.price,
       image: model.images?.[0] || "",
+      type: "car",
     });
 
     setAdded(true);
