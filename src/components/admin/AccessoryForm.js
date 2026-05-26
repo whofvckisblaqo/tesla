@@ -166,20 +166,38 @@ export default function AccessoryForm({ accessory, onSave, onCancel }) {
         {/* Image */}
         <div style={{ marginBottom: "1.5rem" }}>
           <p style={{ color: "#E31937", fontSize: "0.65rem", letterSpacing: "0.3em", textTransform: "uppercase", marginBottom: "1rem" }}>Image</p>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end" }}>
-            <div>
-              <label style={labelStyle}>Image URL</label>
-              <input name="image" value={form.image} onChange={handleChange} placeholder="https://... or upload below" style={inputStyle} onFocus={(e) => (e.target.style.borderColor = "#E31937")} onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")} />
-            </div>
-            <label style={{ display: "inline-block", padding: "0.75rem 1.25rem", background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", fontSize: "0.75rem", fontWeight: 600, letterSpacing: "0.1em", cursor: "pointer", textTransform: "uppercase", whiteSpace: "nowrap" }}>
-              {uploading ? "Uploading..." : "📁 Upload"}
-              <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} disabled={uploading} />
-            </label>
+
+          {/* Upload button */}
+          <label style={{ display: "inline-block", padding: "0.75rem 1.5rem", background: "rgba(255,255,255,0.06)", border: "1px dashed rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.7)", fontSize: "0.8rem", fontWeight: 600, letterSpacing: "0.1em", cursor: uploading ? "not-allowed" : "pointer", marginBottom: "1rem", textTransform: "uppercase" }}>
+            {uploading ? "Uploading..." : "📁 Upload Photo"}
+            <input type="file" accept="image/*" onChange={handleImageUpload} style={{ display: "none" }} disabled={uploading} />
+          </label>
+
+          {/* URL input */}
+          <div style={{ display: "flex", gap: "0.5rem", marginBottom: "1rem" }}>
+            <input
+              name="image"
+              value={form.image}
+              onChange={handleChange}
+              placeholder="Or paste an image URL"
+              style={{ ...inputStyle, flex: 1 }}
+              onFocus={(e) => (e.target.style.borderColor = "#E31937")}
+              onBlur={(e) => (e.target.style.borderColor = "rgba(255,255,255,0.1)")}
+            />
+            {form.image && (
+              <button
+                type="button"
+                onClick={() => setForm((prev) => ({ ...prev, image: "" }))}
+                style={{ padding: "0.75rem 1rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.75rem", cursor: "pointer", whiteSpace: "nowrap" }}
+              >
+                Clear
+              </button>
+            )}
           </div>
 
           {/* Preview */}
           {form.image && (
-            <div style={{ marginTop: "1rem", width: "120px", height: "80px", backgroundImage: `url(${form.image})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }} />
+            <div style={{ width: "160px", height: "110px", backgroundImage: `url(${form.image})`, backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundColor: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)" }} />
           )}
         </div>
 
