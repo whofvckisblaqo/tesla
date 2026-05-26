@@ -76,6 +76,25 @@ export default function TrackOrderPage() {
           gap: 3rem;
           align-items: start;
         }
+        .track-search-row {
+          display: grid;
+          grid-template-columns: 1fr auto;
+          gap: 1rem;
+          align-items: end;
+        }
+        .track-inputs {
+          display: grid;
+          grid-template-columns: 1fr 1fr;
+          gap: 1rem;
+        }
+        .track-item-row {
+          display: flex;
+          align-items: center;
+          gap: 0.875rem;
+        }
+        .track-item-price {
+          flex-shrink: 0;
+        }
         .steps-container {
           position: relative;
           padding-left: 2rem;
@@ -101,6 +120,18 @@ export default function TrackOrderPage() {
             grid-template-columns: 1fr;
             gap: 2rem;
           }
+          .track-search-row {
+            grid-template-columns: 1fr;
+          }
+          .track-inputs {
+            grid-template-columns: 1fr;
+          }
+          .track-item-row {
+            flex-wrap: wrap;
+          }
+          .track-item-price {
+            margin-left: auto;
+          }
         }
       `}</style>
 
@@ -125,8 +156,8 @@ export default function TrackOrderPage() {
           {/* Search Form */}
           <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "clamp(1.25rem, 4vw, 2rem)", marginBottom: "2.5rem" }}>
             <form onSubmit={handleSearch}>
-              <div style={{ display: "grid", gridTemplateColumns: "1fr auto", gap: "1rem", alignItems: "end" }}>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "1rem" }}>
+              <div className="track-search-row">
+                <div className="track-inputs">
                   <div>
                     <label style={{ display: "block", fontSize: "0.7rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.5rem" }}>
                       Order ID
@@ -159,7 +190,7 @@ export default function TrackOrderPage() {
                 <button
                   type="submit"
                   disabled={loading}
-                  style={{ padding: "0.875rem 1.75rem", background: loading ? "rgba(227,25,55,0.5)" : "#E31937", color: "#fff", border: "none", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap", height: "fit-content" }}
+                  style={{ padding: "0.875rem 1.75rem", background: loading ? "rgba(227,25,55,0.5)" : "#E31937", color: "#fff", border: "none", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", cursor: loading ? "not-allowed" : "pointer", whiteSpace: "nowrap", width: "100%" }}
                 >
                   {loading ? "Searching..." : "Track Order"}
                 </button>
@@ -289,13 +320,13 @@ export default function TrackOrderPage() {
                   <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.25rem" }}>
                     <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "1rem" }}>Items Ordered</p>
                     {order.items?.map((item, i) => (
-                      <div key={i} style={{ display: "flex", alignItems: "center", gap: "0.875rem", marginBottom: i < order.items.length - 1 ? "0.875rem" : 0 }}>
+                      <div key={i} className="track-item-row" style={{ marginBottom: i < order.items.length - 1 ? "0.875rem" : 0 }}>
                         <div style={{ width: "60px", height: "44px", backgroundImage: `url(${item.image})`, backgroundSize: "cover", backgroundPosition: "center", filter: "brightness(0.7)", flexShrink: 0 }} />
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem", fontFamily: "Georgia, serif", textTransform: "uppercase" }}>{item.name}</p>
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem" }}>{item.color} · Qty: {item.quantity}</p>
                         </div>
-                        <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem", flexShrink: 0 }}>${(item.price * item.quantity).toLocaleString()}</p>
+                        <p className="track-item-price" style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>${(item.price * item.quantity).toLocaleString()}</p>
                       </div>
                     ))}
                   </div>
