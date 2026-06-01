@@ -196,7 +196,7 @@ export default function Navbar() {
       )}
 
       {/* Single shared translate dropdown — always in DOM so Google Translate can initialize */}
-      <div style={{ position: "absolute", top: "4rem", right: "1.5rem", background: "#111", border: "1px solid rgba(255,255,255,0.12)", padding: "1rem 1.25rem", minWidth: "210px", zIndex: 100, boxShadow: "0 8px 32px rgba(0,0,0,0.7)", display: showTranslate ? "block" : "none" }}>
+      <div className="translate-dropdown" style={{ display: showTranslate ? "block" : "none" }}>
         <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Select Language</p>
         <div id="google_translate_element" />
       </div>
@@ -205,10 +205,36 @@ export default function Navbar() {
         .desktop-nav { display: flex !important; }
         .mobile-nav { display: none !important; }
         .mobile-menu-btn { display: none !important; }
+
+        .translate-dropdown {
+          position: fixed;
+          top: 4rem;
+          right: 1.5rem;
+          background: #111;
+          border: 1px solid rgba(255,255,255,0.12);
+          padding: 1rem 1.25rem;
+          width: 230px;
+          z-index: 9999;
+          box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+        }
+        .translate-dropdown #google_translate_element {
+          width: 100%;
+        }
+        .translate-dropdown #google_translate_element select.goog-te-combo {
+          width: 100% !important;
+          max-height: none !important;
+        }
+
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-nav { display: flex !important; }
           .mobile-menu-btn { display: block !important; }
+
+          .translate-dropdown {
+            left: 1rem;
+            right: 1rem;
+            width: auto;
+          }
         }
       `}</style>
     </nav>
