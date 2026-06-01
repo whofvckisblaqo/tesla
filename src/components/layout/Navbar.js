@@ -47,9 +47,6 @@ const LANGUAGES = [
   { code: "ur", name: "Urdu", flag: "🇵🇰" },
   { code: "sw", name: "Swahili", flag: "🇰🇪" },
   { code: "af", name: "Afrikaans", flag: "🇿🇦" },
-  { code: "yo", name: "Yoruba", flag: "🇳🇬" },
-  { code: "ig", name: "Igbo", flag: "🇳🇬" },
-  { code: "ha", name: "Hausa", flag: "🇳🇬" },
   { code: "am", name: "Amharic", flag: "🇪🇹" },
   { code: "fil", name: "Filipino", flag: "🇵🇭" },
   { code: "ca", name: "Catalan", flag: "🏴" },
@@ -84,11 +81,19 @@ export default function Navbar() {
   const changeLanguage = (code) => {
     setSelectedLang(code);
     setShowTranslate(false);
-    const select = document.querySelector(".goog-te-combo");
-    if (select) {
-      select.value = code;
-      select.dispatchEvent(new Event("change"));
-    }
+
+    const applyLang = (attempts = 0) => {
+      const select = document.querySelector(".goog-te-combo");
+      if (select) {
+        select.value = code;
+        select.dispatchEvent(new Event("change"));
+      } else if (attempts < 15) {
+        // Google Translate may still be loading — retry every 300 ms
+        setTimeout(() => applyLang(attempts + 1), 300);
+      }
+    };
+
+    applyLang();
   };
 
   const currentLang = LANGUAGES.find((l) => l.code === selectedLang) || LANGUAGES[0];
