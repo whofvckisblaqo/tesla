@@ -83,13 +83,19 @@ export default function Navbar() {
     setShowTranslate(false);
 
     const applyLang = (attempts = 0) => {
-      const select = document.querySelector(".goog-te-combo");
-      if (select) {
-        select.value = code;
-        select.dispatchEvent(new Event("change"));
-      } else if (attempts < 15) {
-        // Google Translate may still be loading — retry every 300 ms
-        setTimeout(() => applyLang(attempts + 1), 300);
+      const selects = document.getElementsByTagName("select");
+      let combo = null;
+      for (let i = 0; i < selects.length; i++) {
+        if (selects[i].className.includes("goog-te-combo")) {
+          combo = selects[i];
+          break;
+        }
+      }
+      if (combo) {
+        combo.value = code;
+        combo.dispatchEvent(new Event("change", { bubbles: true }));
+      } else if (attempts < 20) {
+        setTimeout(() => applyLang(attempts + 1), 500);
       }
     };
 
