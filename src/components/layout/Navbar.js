@@ -4,10 +4,64 @@ import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
+const LANGUAGES = [
+  { code: "en", name: "English", flag: "🇺🇸" },
+  { code: "es", name: "Spanish", flag: "🇪🇸" },
+  { code: "fr", name: "French", flag: "🇫🇷" },
+  { code: "de", name: "German", flag: "🇩🇪" },
+  { code: "it", name: "Italian", flag: "🇮🇹" },
+  { code: "pt", name: "Portuguese", flag: "🇵🇹" },
+  { code: "ru", name: "Russian", flag: "🇷🇺" },
+  { code: "zh-CN", name: "Chinese (Simplified)", flag: "🇨🇳" },
+  { code: "zh-TW", name: "Chinese (Traditional)", flag: "🇹🇼" },
+  { code: "ja", name: "Japanese", flag: "🇯🇵" },
+  { code: "ko", name: "Korean", flag: "🇰🇷" },
+  { code: "ar", name: "Arabic", flag: "🇸🇦" },
+  { code: "hi", name: "Hindi", flag: "🇮🇳" },
+  { code: "bn", name: "Bengali", flag: "🇧🇩" },
+  { code: "nl", name: "Dutch", flag: "🇳🇱" },
+  { code: "pl", name: "Polish", flag: "🇵🇱" },
+  { code: "sv", name: "Swedish", flag: "🇸🇪" },
+  { code: "no", name: "Norwegian", flag: "🇳🇴" },
+  { code: "da", name: "Danish", flag: "🇩🇰" },
+  { code: "fi", name: "Finnish", flag: "🇫🇮" },
+  { code: "tr", name: "Turkish", flag: "🇹🇷" },
+  { code: "id", name: "Indonesian", flag: "🇮🇩" },
+  { code: "ms", name: "Malay", flag: "🇲🇾" },
+  { code: "th", name: "Thai", flag: "🇹🇭" },
+  { code: "vi", name: "Vietnamese", flag: "🇻🇳" },
+  { code: "uk", name: "Ukrainian", flag: "🇺🇦" },
+  { code: "cs", name: "Czech", flag: "🇨🇿" },
+  { code: "el", name: "Greek", flag: "🇬🇷" },
+  { code: "hu", name: "Hungarian", flag: "🇭🇺" },
+  { code: "ro", name: "Romanian", flag: "🇷🇴" },
+  { code: "sk", name: "Slovak", flag: "🇸🇰" },
+  { code: "bg", name: "Bulgarian", flag: "🇧🇬" },
+  { code: "hr", name: "Croatian", flag: "🇭🇷" },
+  { code: "sr", name: "Serbian", flag: "🇷🇸" },
+  { code: "lt", name: "Lithuanian", flag: "🇱🇹" },
+  { code: "lv", name: "Latvian", flag: "🇱🇻" },
+  { code: "et", name: "Estonian", flag: "🇪🇪" },
+  { code: "he", name: "Hebrew", flag: "🇮🇱" },
+  { code: "fa", name: "Persian", flag: "🇮🇷" },
+  { code: "ur", name: "Urdu", flag: "🇵🇰" },
+  { code: "sw", name: "Swahili", flag: "🇰🇪" },
+  { code: "af", name: "Afrikaans", flag: "🇿🇦" },
+  { code: "yo", name: "Yoruba", flag: "🇳🇬" },
+  { code: "ig", name: "Igbo", flag: "🇳🇬" },
+  { code: "ha", name: "Hausa", flag: "🇳🇬" },
+  { code: "am", name: "Amharic", flag: "🇪🇹" },
+  { code: "fil", name: "Filipino", flag: "🇵🇭" },
+  { code: "ca", name: "Catalan", flag: "🏴" },
+  { code: "gl", name: "Galician", flag: "🇪🇸" },
+  { code: "eu", name: "Basque", flag: "🏴" },
+];
+
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [showTranslate, setShowTranslate] = useState(false);
+  const [selectedLang, setSelectedLang] = useState("en");
   const translateRef = useRef(null);
   const { cartCount, setCartOpen } = useCart();
 
@@ -27,6 +81,18 @@ export default function Navbar() {
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, [showTranslate]);
 
+  const changeLanguage = (code) => {
+    setSelectedLang(code);
+    setShowTranslate(false);
+    const select = document.querySelector(".goog-te-combo");
+    if (select) {
+      select.value = code;
+      select.dispatchEvent(new Event("change"));
+    }
+  };
+
+  const currentLang = LANGUAGES.find((l) => l.code === selectedLang) || LANGUAGES[0];
+
   const navLinks = [
     { label: "Models", href: "/models" },
     { label: "Optimus", href: "/optimus" },
@@ -34,6 +100,28 @@ export default function Navbar() {
     { label: "Track Order", href: "/order/track" },
     { label: "About", href: "/about" },
   ];
+
+  const GlobeButton = () => (
+    <button
+      onClick={() => setShowTranslate((v) => !v)}
+      title="Translate"
+      style={{
+        background: showTranslate ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)",
+        border: "1px solid rgba(255,255,255,0.12)",
+        color: "#fff",
+        width: "2.25rem",
+        height: "2.25rem",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        fontSize: "1.1rem",
+        flexShrink: 0,
+      }}
+    >
+      🌐
+    </button>
+  );
 
   return (
     <nav
@@ -92,17 +180,7 @@ export default function Navbar() {
           >
             Sign In
           </Link>
-
-          {/* Translate */}
-          <button
-            onClick={() => setShowTranslate((v) => !v)}
-            title="Translate"
-            style={{ background: showTranslate ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}
-          >
-            🌐
-          </button>
-
-          {/* Cart */}
+          <GlobeButton />
           <button
             onClick={() => setCartOpen(true)}
             style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}
@@ -114,7 +192,6 @@ export default function Navbar() {
               </span>
             )}
           </button>
-
           <Link
             href="/models"
             style={{ padding: "0.5rem 1.25rem", background: "#E31937", color: "#fff", fontSize: "0.75rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", textDecoration: "none" }}
@@ -125,15 +202,7 @@ export default function Navbar() {
 
         {/* Mobile Right */}
         <div style={{ display: "none", alignItems: "center", gap: "0.75rem" }} className="mobile-nav">
-          {/* Mobile Translate */}
-          <button
-            onClick={() => setShowTranslate((v) => !v)}
-            title="Translate"
-            style={{ background: showTranslate ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}
-          >
-            🌐
-          </button>
-
+          <GlobeButton />
           <button
             onClick={() => setCartOpen(true)}
             style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}
@@ -145,8 +214,6 @@ export default function Navbar() {
               </span>
             )}
           </button>
-
-          {/* Hamburger */}
           <button
             onClick={() => setMenuOpen(!menuOpen)}
             style={{ background: "none", border: "none", cursor: "pointer", padding: "0.25rem" }}
@@ -195,45 +262,91 @@ export default function Navbar() {
         </div>
       )}
 
-      {/* Single shared translate dropdown — always in DOM so Google Translate can initialize */}
-      <div className="translate-dropdown" style={{ display: showTranslate ? "block" : "none" }}>
-        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Select Language</p>
-        <div id="google_translate_element" />
+      {/* Language picker — custom scrollable list */}
+      <div className="translate-panel" style={{ display: showTranslate ? "flex" : "none" }}>
+        {/* Header */}
+        <div style={{ padding: "1rem 1.25rem 0.75rem", borderBottom: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+          <p style={{ color: "rgba(255,255,255,0.45)", fontSize: "0.65rem", letterSpacing: "0.25em", textTransform: "uppercase", fontWeight: 700 }}>Language</p>
+          <span style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem" }}>{currentLang.flag} {currentLang.name}</span>
+        </div>
+
+        {/* Scrollable language list */}
+        <div style={{ overflowY: "auto", flex: 1 }}>
+          {LANGUAGES.map((lang) => {
+            const active = selectedLang === lang.code;
+            return (
+              <button
+                key={lang.code}
+                onClick={() => changeLanguage(lang.code)}
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "0.875rem",
+                  width: "100%",
+                  padding: "0.75rem 1.25rem",
+                  background: active ? "rgba(227,25,55,0.1)" : "transparent",
+                  border: "none",
+                  borderLeft: active ? "3px solid #E31937" : "3px solid transparent",
+                  cursor: "pointer",
+                  textAlign: "left",
+                  transition: "background 0.15s",
+                }}
+              >
+                <span style={{ fontSize: "1.3rem", lineHeight: 1, flexShrink: 0 }}>{lang.flag}</span>
+                <span style={{ color: active ? "#fff" : "rgba(255,255,255,0.75)", fontSize: "0.875rem", fontWeight: active ? 700 : 400 }}>
+                  {lang.name}
+                </span>
+                {active && (
+                  <span style={{ marginLeft: "auto", color: "#E31937", fontSize: "0.8rem" }}>✓</span>
+                )}
+              </button>
+            );
+          })}
+        </div>
       </div>
+
+      {/* Hidden Google Translate element — needed for initialization */}
+      <div id="google_translate_element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none", width: 0, height: 0, overflow: "hidden" }} />
 
       <style>{`
         .desktop-nav { display: flex !important; }
         .mobile-nav { display: none !important; }
         .mobile-menu-btn { display: none !important; }
 
-        .translate-dropdown {
+        .translate-panel {
           position: fixed;
           top: 4rem;
           right: 1.5rem;
-          background: #111;
-          border: 1px solid rgba(255,255,255,0.12);
-          padding: 1rem 1.25rem;
-          width: 230px;
+          width: 260px;
+          max-height: 65vh;
+          background: #0a0a0a;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 12px 40px rgba(0,0,0,0.85);
           z-index: 9999;
-          box-shadow: 0 8px 32px rgba(0,0,0,0.8);
+          flex-direction: column;
+          overflow: hidden;
         }
-        .translate-dropdown #google_translate_element {
-          width: 100%;
+
+        .translate-panel button:hover {
+          background: rgba(255,255,255,0.05) !important;
         }
-        .translate-dropdown #google_translate_element select.goog-te-combo {
-          width: 100% !important;
-          max-height: none !important;
-        }
+
+        /* Suppress Google translate banner */
+        body { top: 0 !important; }
+        .goog-te-banner-frame.skiptranslate { display: none !important; }
+        .goog-te-gadget { display: none !important; }
+        .goog-logo-link { display: none !important; }
 
         @media (max-width: 768px) {
           .desktop-nav { display: none !important; }
           .mobile-nav { display: flex !important; }
           .mobile-menu-btn { display: block !important; }
 
-          .translate-dropdown {
-            left: 1rem;
-            right: 1rem;
+          .translate-panel {
+            left: 0.75rem;
+            right: 0.75rem;
             width: auto;
+            max-height: 60vh;
           }
         }
       `}</style>
