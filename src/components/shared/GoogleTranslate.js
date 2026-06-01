@@ -8,11 +8,7 @@ export default function GoogleTranslate() {
 
     window.googleTranslateElementInit = function () {
       new window.google.translate.TranslateElement(
-        {
-          pageLanguage: "en",
-          layout: window.google.translate.TranslateElement.InlineLayout.SIMPLE,
-          autoDisplay: false,
-        },
+        { pageLanguage: "en", autoDisplay: false },
         "google_translate_element"
       );
     };
@@ -26,9 +22,6 @@ export default function GoogleTranslate() {
   }, []);
 
   return (
-    <div
-      id="google_translate_element"
-      style={{ position: "fixed", top: "-9999px", left: "-9999px" }}
-    />
+    <div id="google_translate_element" style={{ display: "none" }} />
   );
 }

@@ -59,6 +59,12 @@ export default function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [showTranslate, setShowTranslate] = useState(false);
   const [selectedLang, setSelectedLang] = useState("en");
+
+  // Read active language from googtrans cookie on mount
+  useEffect(() => {
+    const match = document.cookie.match(/googtrans=\/en\/([^;]+)/);
+    if (match) setSelectedLang(decodeURIComponent(match[1]));
+  }, []);
   const translateRef = useRef(null);
   const { cartCount, setCartOpen } = useCart();
 
@@ -79,27 +85,19 @@ export default function Navbar() {
   }, [showTranslate]);
 
   const changeLanguage = (code) => {
-    setSelectedLang(code);
     setShowTranslate(false);
 
-    const applyLang = (attempts = 0) => {
-      const selects = document.getElementsByTagName("select");
-      let combo = null;
-      for (let i = 0; i < selects.length; i++) {
-        if (selects[i].className.includes("goog-te-combo")) {
-          combo = selects[i];
-          break;
-        }
-      }
-      if (combo) {
-        combo.value = code;
-        combo.dispatchEvent(new Event("change", { bubbles: true }));
-      } else if (attempts < 20) {
-        setTimeout(() => applyLang(attempts + 1), 500);
-      }
-    };
-
-    applyLang();
+    const host = window.location.hostname;
+    if (code === "en") {
+      // Clear the translation cookie and reload
+      document.cookie = "googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; path=/;";
+      document.cookie = `googtrans=; expires=Thu, 01 Jan 1970 00:00:01 GMT; domain=.${host}; path=/;`;
+    } else {
+      // Set translation cookie for both root and subdomain
+      document.cookie = `googtrans=/en/${code}; path=/`;
+      document.cookie = `googtrans=/en/${code}; domain=.${host}; path=/`;
+    }
+    window.location.reload();
   };
 
   const currentLang = LANGUAGES.find((l) => l.code === selectedLang) || LANGUAGES[0];
