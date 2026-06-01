@@ -1,12 +1,14 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import Link from "next/link";
 import { useCart } from "@/context/CartContext";
 
 export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
+  const [showTranslate, setShowTranslate] = useState(false);
+  const translateRef = useRef(null);
   const { cartCount, setCartOpen } = useCart();
 
   useEffect(() => {
@@ -14,6 +16,16 @@ export default function Navbar() {
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
+
+  useEffect(() => {
+    const handleClickOutside = (e) => {
+      if (translateRef.current && !translateRef.current.contains(e.target)) {
+        setShowTranslate(false);
+      }
+    };
+    if (showTranslate) document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showTranslate]);
 
   const navLinks = [
     { label: "Models", href: "/models" },
@@ -25,6 +37,7 @@ export default function Navbar() {
 
   return (
     <nav
+      ref={translateRef}
       style={{
         position: "fixed",
         top: 0,
@@ -80,6 +93,15 @@ export default function Navbar() {
             Sign In
           </Link>
 
+          {/* Translate */}
+          <button
+            onClick={() => setShowTranslate((v) => !v)}
+            title="Translate"
+            style={{ background: showTranslate ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}
+          >
+            🌐
+          </button>
+
           {/* Cart */}
           <button
             onClick={() => setCartOpen(true)}
@@ -103,6 +125,15 @@ export default function Navbar() {
 
         {/* Mobile Right */}
         <div style={{ display: "none", alignItems: "center", gap: "0.75rem" }} className="mobile-nav">
+          {/* Mobile Translate */}
+          <button
+            onClick={() => setShowTranslate((v) => !v)}
+            title="Translate"
+            style={{ background: showTranslate ? "rgba(255,255,255,0.12)" : "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.1rem" }}
+          >
+            🌐
+          </button>
+
           <button
             onClick={() => setCartOpen(true)}
             style={{ position: "relative", background: "rgba(255,255,255,0.08)", border: "1px solid rgba(255,255,255,0.12)", color: "#fff", width: "2.25rem", height: "2.25rem", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1rem" }}
@@ -163,6 +194,12 @@ export default function Navbar() {
           </div>
         </div>
       )}
+
+      {/* Single shared translate dropdown — always in DOM so Google Translate can initialize */}
+      <div style={{ position: "absolute", top: "4rem", right: "1.5rem", background: "#111", border: "1px solid rgba(255,255,255,0.12)", padding: "1rem 1.25rem", minWidth: "210px", zIndex: 100, boxShadow: "0 8px 32px rgba(0,0,0,0.7)", display: showTranslate ? "block" : "none" }}>
+        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Select Language</p>
+        <div id="google_translate_element" />
+      </div>
 
       <style>{`
         .desktop-nav { display: flex !important; }

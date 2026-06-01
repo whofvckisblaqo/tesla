@@ -27,6 +27,23 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           crossOrigin="*"
         />
+        <Script
+          id="google-translate-init"
+          strategy="beforeInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `function googleTranslateElementInit() {
+              new google.translate.TranslateElement({
+                pageLanguage: 'en',
+                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                autoDisplay: false
+              }, 'google_translate_element');
+            }`
+          }}
+        />
+        <Script
+          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          strategy="afterInteractive"
+        />
       </body>
     </html>
   );
