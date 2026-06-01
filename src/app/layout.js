@@ -27,22 +27,28 @@ export default function RootLayout({ children }) {
           strategy="afterInteractive"
           crossOrigin="*"
         />
+        {/* Google Translate — off-screen element so the widget can initialize */}
+        <div id="google_translate_element" style={{ position: "fixed", top: "-9999px", left: "-9999px" }} />
         <Script
-          id="google-translate-init"
-          strategy="beforeInteractive"
-          dangerouslySetInnerHTML={{
-            __html: `function googleTranslateElementInit() {
-              new google.translate.TranslateElement({
-                pageLanguage: 'en',
-                layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
-                autoDisplay: false
-              }, 'google_translate_element');
-            }`
-          }}
-        />
-        <Script
-          src="//translate.google.com/translate_a/element.js?cb=googleTranslateElementInit"
+          id="google-translate-loader"
           strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              window.googleTranslateElementInit = function() {
+                new google.translate.TranslateElement({
+                  pageLanguage: 'en',
+                  layout: google.translate.TranslateElement.InlineLayout.SIMPLE,
+                  autoDisplay: false
+                }, 'google_translate_element');
+              };
+              (function() {
+                var s = document.createElement('script');
+                s.src = 'https://translate.google.com/translate_a/element.js?cb=googleTranslateElementInit';
+                s.async = true;
+                document.head.appendChild(s);
+              })();
+            `
+          }}
         />
       </body>
     </html>

@@ -310,8 +310,6 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Hidden Google Translate element — needed for initialization */}
-      <div id="google_translate_element" style={{ position: "absolute", visibility: "hidden", pointerEvents: "none", width: 0, height: 0, overflow: "hidden" }} />
 
       <style>{`
         .desktop-nav { display: flex !important; }
