@@ -1,4 +1,5 @@
 export const dynamic = "force-dynamic";
+
 import { NextResponse } from "next/server";
 import { getDb } from "@/lib/db";
 import { getServerSession } from "next-auth";
@@ -26,6 +27,8 @@ export async function POST(req) {
       phone,
       name,
       email,
+      couponCode,
+      couponApplied,
     } = body;
 
     if (!items || items.length === 0) {
@@ -56,7 +59,9 @@ export async function POST(req) {
       monthlyPayment: Number(monthlyPayment) || 0,
       loanTerm: Number(loanTerm) || 0,
       interestRate: Number(interestRate) || 0,
-      status: "pending_payment",
+      couponCode: couponCode || null,
+      couponApplied: couponApplied || false,
+      status: couponApplied ? "paid" : "pending_payment",
       address: address || "",
       city: city || "",
       country: country || "",
@@ -66,13 +71,26 @@ export async function POST(req) {
     const result = await db.collection("orders").insertOne(order);
     const savedOrder = { ...order, _id: result.insertedId };
 
+    // Mark coupon as used if applied
+    if (couponCode && couponApplied) {
+      await db.collection("coupons").updateOne(
+        { code: couponCode.toUpperCase() },
+        {
+          $set: {
+            used: true,
+            usedBy: email,
+            usedAt: new Date(),
+          },
+        }
+      );
+    }
+
     // Send emails
     try {
-      await sendOrderConfirmationEmail({ order: savedOrder });
+      await sendOrderConfirmationEmail({ order: savedOrder, couponApplied });
       await sendAdminNotificationEmail({ order: savedOrder });
     } catch (emailErr) {
       console.error("Email sending failed:", emailErr);
-      // Don't fail the order if email fails
     }
 
     return NextResponse.json(

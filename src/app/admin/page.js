@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import Navbar from "@/components/layout/Navbar";
 import CarForm from "@/components/admin/CarForm";
 import AccessoryForm from "@/components/admin/AccessoryForm";
-import RobotForm from "@/components/admin/RobotForm";
 
 const STATUS_COLORS = {
   pending_payment: "#F59E0B",
@@ -32,7 +31,7 @@ export default function AdminPage() {
   const [users, setUsers] = useState([]);
   const [cars, setCars] = useState([]);
   const [accessories, setAccessories] = useState([]);
-  const [robots, setRobots] = useState([]);
+  const [coupons, setCoupons] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState("overview");
   const [updatingId, setUpdatingId] = useState(null);
@@ -50,15 +49,11 @@ export default function AdminPage() {
   const [seedingAccessories, setSeedingAccessories] = useState(false);
   const [seedAccessoryMessage, setSeedAccessoryMessage] = useState("");
 
-  // Robot states
-  const [showRobotForm, setShowRobotForm] = useState(false);
-  const [editingRobot, setEditingRobot] = useState(null);
-  const [seedingRobots, setSeedingRobots] = useState(false);
-  const [seedRobotMessage, setSeedRobotMessage] = useState("");
-
-  // Review states
-  const [seedingReviews, setSeedingReviews] = useState(false);
-  const [seedReviewMessage, setSeedReviewMessage] = useState("");
+  // Coupon states
+  const [showCouponForm, setShowCouponForm] = useState(false);
+  const [couponForm, setCouponForm] = useState({ code: "", description: "", assignedTo: "", expiresAt: "" });
+  const [creatingCoupon, setCreatingCoupon] = useState(false);
+  const [couponMessage, setCouponMessage] = useState("");
 
   useEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
@@ -69,38 +64,32 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (status === "loading") return;
-    if (status === "unauthenticated") {
-      router.push("/admin-access");
-      return;
-    }
+    if (status === "unauthenticated") { router.push("/admin-access"); return; }
     if (status === "authenticated") {
-      if (session?.user?.role !== "admin") {
-        router.push("/");
-        return;
-      }
+      if (session?.user?.role !== "admin") { router.push("/"); return; }
       fetchData();
     }
   }, [status, session]);
 
   const fetchData = async () => {
     try {
-      const [ordersRes, usersRes, carsRes, accessoriesRes, robotsRes] = await Promise.all([
+      const [ordersRes, usersRes, carsRes, accessoriesRes, couponsRes] = await Promise.all([
         fetch("/api/admin/orders"),
         fetch("/api/admin/users"),
         fetch("/api/cars"),
         fetch("/api/accessories"),
-        fetch("/api/robots"),
+        fetch("/api/coupons"),
       ]);
       const ordersData = await ordersRes.json();
       const usersData = await usersRes.json();
       const carsData = await carsRes.json();
       const accessoriesData = await accessoriesRes.json();
-      const robotsData = await robotsRes.json();
+      const couponsData = await couponsRes.json();
       setOrders(ordersData.orders || []);
       setUsers(usersData.users || []);
       setCars(carsData.cars || []);
       setAccessories(accessoriesData.accessories || []);
-      setRobots(robotsData.robots || []);
+      setCoupons(couponsData.coupons || []);
     } catch (err) {
       console.error(err);
     } finally {
@@ -117,55 +106,37 @@ export default function AdminPage() {
         body: JSON.stringify({ orderId, status: newStatus }),
       });
       if (res.ok) {
-        setOrders((prev) =>
-          prev.map((o) => o._id === orderId ? { ...o, status: newStatus } : o)
-        );
+        setOrders((prev) => prev.map((o) => o._id === orderId ? { ...o, status: newStatus } : o));
       }
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setUpdatingId(null);
-    }
+    } catch (err) { console.error(err); } finally { setUpdatingId(null); }
   };
 
   const seedDatabase = async () => {
-    setSeedingDb(true);
-    setSeedMessage("");
+    setSeedingDb(true); setSeedMessage("");
     try {
       const res = await fetch("/api/cars/seed");
       const data = await res.json();
       setSeedMessage(data.message);
       fetchData();
-    } catch (err) {
-      setSeedMessage("Seed failed: " + err.message);
-    } finally {
-      setSeedingDb(false);
-    }
+    } catch (err) { setSeedMessage("Seed failed: " + err.message); } finally { setSeedingDb(false); }
   };
 
   const deleteCar = async (carId) => {
-    if (!confirm("Are you sure you want to delete this car?")) return;
+    if (!confirm("Delete this car?")) return;
     try {
       await fetch(`/api/cars?carId=${carId}`, { method: "DELETE" });
       setCars((prev) => prev.filter((c) => c._id !== carId));
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
   const seedAccessoriesDb = async () => {
-    setSeedingAccessories(true);
-    setSeedAccessoryMessage("");
+    setSeedingAccessories(true); setSeedAccessoryMessage("");
     try {
       const res = await fetch("/api/accessories/seed");
       const data = await res.json();
       setSeedAccessoryMessage(data.message);
       fetchData();
-    } catch (err) {
-      setSeedAccessoryMessage("Seed failed: " + err.message);
-    } finally {
-      setSeedingAccessories(false);
-    }
+    } catch (err) { setSeedAccessoryMessage("Seed failed: " + err.message); } finally { setSeedingAccessories(false); }
   };
 
   const deleteAccessory = async (id) => {
@@ -173,48 +144,43 @@ export default function AdminPage() {
     try {
       await fetch(`/api/accessories?id=${id}`, { method: "DELETE" });
       setAccessories((prev) => prev.filter((a) => a._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
+    } catch (err) { console.error(err); }
   };
 
-  const seedRobotsDb = async () => {
-    setSeedingRobots(true);
-    setSeedRobotMessage("");
+  const generateCouponCode = () => {
+    const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+    let code = "TESLA-";
+    for (let i = 0; i < 8; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
+    setCouponForm((prev) => ({ ...prev, code }));
+  };
+
+  const createCoupon = async (e) => {
+    e.preventDefault();
+    setCreatingCoupon(true); setCouponMessage("");
     try {
-      const res = await fetch("/api/robots/seed");
+      const res = await fetch("/api/coupons", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(couponForm),
+      });
       const data = await res.json();
-      setSeedRobotMessage(data.message);
-      fetchData();
-    } catch (err) {
-      setSeedRobotMessage("Seed failed: " + err.message);
-    } finally {
-      setSeedingRobots(false);
-    }
+      if (res.ok) {
+        setCouponMessage("✅ " + data.message);
+        setCouponForm({ code: "", description: "", assignedTo: "", expiresAt: "" });
+        setShowCouponForm(false);
+        fetchData();
+      } else {
+        setCouponMessage("❌ " + data.message);
+      }
+    } catch (err) { setCouponMessage("❌ Failed to create coupon"); } finally { setCreatingCoupon(false); }
   };
 
-  const deleteRobot = async (id) => {
-    if (!confirm("Delete this robot?")) return;
+  const deleteCoupon = async (id) => {
+    if (!confirm("Delete this coupon?")) return;
     try {
-      await fetch(`/api/robots?id=${id}`, { method: "DELETE" });
-      setRobots((prev) => prev.filter((r) => r._id !== id));
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  const seedReviewsDb = async () => {
-    setSeedingReviews(true);
-    setSeedReviewMessage("");
-    try {
-      const res = await fetch("/api/reviews/seed");
-      const data = await res.json();
-      setSeedReviewMessage(data.message);
-    } catch (err) {
-      setSeedReviewMessage("Seed failed: " + err.message);
-    } finally {
-      setSeedingReviews(false);
-    }
+      await fetch(`/api/coupons?id=${id}`, { method: "DELETE" });
+      setCoupons((prev) => prev.filter((c) => c._id !== id));
+    } catch (err) { console.error(err); }
   };
 
   if (status === "loading") {
@@ -230,8 +196,7 @@ export default function AdminPage() {
 
   const totalRevenue = orders.reduce((s, o) => s + (o.totalPrice || 0), 0);
   const pendingOrders = orders.filter((o) => o.status === "pending_payment").length;
-
-  const tabs = ["overview", "orders", "users", "cars", "accessories", "robots"];
+  const tabs = ["overview", "orders", "users", "cars", "accessories", "coupons"];
 
   return (
     <main style={{ background: "#000", minHeight: "100vh" }}>
@@ -242,9 +207,7 @@ export default function AdminPage() {
         {/* Header */}
         <div style={{ marginBottom: "2.5rem" }}>
           <p style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.4em", textTransform: "uppercase", marginBottom: "0.75rem" }}>Admin Panel</p>
-          <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.75rem, 5vw, 3rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>
-            Dashboard
-          </h1>
+          <h1 style={{ fontFamily: "Georgia, serif", fontSize: "clamp(1.75rem, 5vw, 3rem)", fontWeight: 900, color: "#fff", textTransform: "uppercase" }}>Dashboard</h1>
         </div>
 
         {/* Stats */}
@@ -254,15 +217,11 @@ export default function AdminPage() {
             { label: "Total Revenue", value: `$${totalRevenue.toLocaleString()}`, color: "#10B981" },
             { label: "Pending Payment", value: pendingOrders, color: "#F59E0B" },
             { label: "Total Users", value: users.length, color: "#3B82F6" },
-            { label: "Total Cars", value: cars.length, color: "#8B5CF6" },
+            { label: "Active Coupons", value: coupons.filter((c) => !c.used).length, color: "#E31937" },
           ].map((stat) => (
             <div key={stat.label} style={{ background: "#000", padding: isMobile ? "1.25rem" : "1.75rem", textAlign: "center" }}>
-              <p style={{ color: stat.color, fontFamily: "Georgia, serif", fontSize: isMobile ? "1.5rem" : "2rem", fontWeight: 900, marginBottom: "0.25rem" }}>
-                {stat.value}
-              </p>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>
-                {stat.label}
-              </p>
+              <p style={{ color: stat.color, fontFamily: "Georgia, serif", fontSize: isMobile ? "1.5rem" : "2rem", fontWeight: 900, marginBottom: "0.25rem" }}>{stat.value}</p>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>{stat.label}</p>
             </div>
           ))}
         </div>
@@ -270,21 +229,7 @@ export default function AdminPage() {
         {/* Tabs */}
         <div style={{ display: "flex", borderBottom: "1px solid rgba(255,255,255,0.08)", marginBottom: "2rem", overflowX: "auto" }}>
           {tabs.map((tab) => (
-            <button
-              key={tab}
-              onClick={() => setActiveTab(tab)}
-              style={{
-                padding: isMobile ? "0.75rem 1rem" : "0.875rem 1.5rem",
-                background: "none", border: "none",
-                borderBottom: `2px solid ${activeTab === tab ? "#E31937" : "transparent"}`,
-                color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.4)",
-                fontSize: isMobile ? "0.7rem" : "0.8rem",
-                fontWeight: activeTab === tab ? 700 : 400,
-                letterSpacing: "0.15em", textTransform: "uppercase",
-                cursor: "pointer", marginBottom: "-1px",
-                whiteSpace: "nowrap", transition: "all 0.2s",
-              }}
-            >
+            <button key={tab} onClick={() => setActiveTab(tab)} style={{ padding: isMobile ? "0.75rem 1rem" : "0.875rem 1.5rem", background: "none", border: "none", borderBottom: `2px solid ${activeTab === tab ? "#E31937" : "transparent"}`, color: activeTab === tab ? "#fff" : "rgba(255,255,255,0.4)", fontSize: isMobile ? "0.7rem" : "0.8rem", fontWeight: activeTab === tab ? 700 : 400, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer", marginBottom: "-1px", whiteSpace: "nowrap", transition: "all 0.2s" }}>
               {tab}
             </button>
           ))}
@@ -296,9 +241,7 @@ export default function AdminPage() {
             <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem" }}>
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "1.25rem" }}>
                 <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase" }}>Recent Orders</h3>
-                <button onClick={() => setActiveTab("orders")} style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.1em", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>
-                  View All
-                </button>
+                <button onClick={() => setActiveTab("orders")} style={{ color: "#E31937", fontSize: "0.7rem", letterSpacing: "0.1em", background: "none", border: "none", cursor: "pointer", textTransform: "uppercase" }}>View All</button>
               </div>
               {loading ? (
                 <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.8rem", textAlign: "center", padding: "2rem 0" }}>Loading...</p>
@@ -386,12 +329,20 @@ export default function AdminPage() {
                         </div>
                         <div>
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>Total</p>
-                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>${order.totalPrice?.toLocaleString()}</p>
+                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.85rem" }}>
+                            {order.couponApplied ? <span style={{ color: "#10B981" }}>$0 (Coupon)</span> : `$${order.totalPrice?.toLocaleString()}`}
+                          </p>
                         </div>
                         <div>
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>Date</p>
                           <p style={{ color: "#fff", fontSize: "0.8rem" }}>{new Date(order.createdAt).toLocaleDateString()}</p>
                         </div>
+                        {order.couponCode && (
+                          <div>
+                            <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase" }}>Coupon</p>
+                            <p style={{ color: "#10B981", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.1em" }}>{order.couponCode}</p>
+                          </div>
+                        )}
                       </div>
                       <select
                         value={order.status}
@@ -441,9 +392,7 @@ export default function AdminPage() {
                   <div key={i} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.1rem" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
                       <p style={{ color: "#fff", fontWeight: 600, fontSize: "0.875rem" }}>{user.name}</p>
-                      <span style={{ padding: "0.2rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                        {user.role}
-                      </span>
+                      <span style={{ padding: "0.2rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>{user.role}</span>
                     </div>
                     <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.75rem", marginBottom: "0.25rem" }}>{user.email}</p>
                     <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "0.7rem" }}>Joined {new Date(user.createdAt).toLocaleDateString()}</p>
@@ -464,9 +413,7 @@ export default function AdminPage() {
                     <div key={i} style={{ display: "grid", gridTemplateColumns: "2fr 2fr 1fr 1fr", padding: "1rem 1.5rem", borderBottom: i < users.length - 1 ? "1px solid rgba(255,255,255,0.06)" : "none", alignItems: "center" }}>
                       <p style={{ color: "#fff", fontSize: "0.875rem", fontWeight: 600 }}>{user.name}</p>
                       <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.8rem" }}>{user.email}</p>
-                      <span style={{ display: "inline-block", padding: "0.25rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                        {user.role}
-                      </span>
+                      <span style={{ display: "inline-block", padding: "0.25rem 0.6rem", background: user.role === "admin" ? "rgba(227,25,55,0.15)" : "rgba(255,255,255,0.06)", color: user.role === "admin" ? "#E31937" : "rgba(255,255,255,0.4)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>{user.role}</span>
                       <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.8rem" }}>{new Date(user.createdAt).toLocaleDateString()}</p>
                     </div>
                   ))
@@ -492,32 +439,14 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-
             {seedMessage && (
-              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
-                ✅ {seedMessage}
-              </div>
+              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>✅ {seedMessage}</div>
             )}
-
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", marginBottom: "1.5rem", flexWrap: "wrap" }}>
-              <button onClick={seedReviewsDb} disabled={seedingReviews} style={{ padding: "0.5rem 1rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: seedingReviews ? "not-allowed" : "pointer" }}>
-                {seedingReviews ? "Seeding..." : "🌱 Seed Default Reviews"}
-              </button>
-              {seedReviewMessage && (
-                <span style={{ color: "#10B981", fontSize: "0.75rem" }}>✅ {seedReviewMessage}</span>
-              )}
-            </div>
-
             {showCarForm && (
               <div style={{ marginBottom: "2rem" }}>
-                <CarForm
-                  car={editingCar}
-                  onSave={() => { setShowCarForm(false); setEditingCar(null); fetchData(); }}
-                  onCancel={() => { setShowCarForm(false); setEditingCar(null); }}
-                />
+                <CarForm car={editingCar} onSave={() => { setShowCarForm(false); setEditingCar(null); fetchData(); }} onCancel={() => { setShowCarForm(false); setEditingCar(null); }} />
               </div>
             )}
-
             {cars.length === 0 ? (
               <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🚗</div>
@@ -538,107 +467,15 @@ export default function AdminPage() {
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.72rem", marginTop: "0.2rem" }}>{car.tagline}</p>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end" }}>
-                          <span style={{ padding: "0.2rem 0.5rem", background: car.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: car.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                            {car.inStock ? "In Stock" : "Out of Stock"}
-                          </span>
-                          {car.featured && (
-                            <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                              Featured
-                            </span>
-                          )}
+                          <span style={{ padding: "0.2rem 0.5rem", background: car.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: car.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>{car.inStock ? "In Stock" : "Out of Stock"}</span>
+                          {car.featured && <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>Featured</span>}
                         </div>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                         <p style={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}>${car.price?.toLocaleString()}</p>
                         <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button onClick={() => { setEditingCar(car); setShowCarForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Edit
-                          </button>
-                          <button onClick={() => deleteCar(car._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Delete
-                          </button>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* ROBOTS TAB */}
-        {activeTab === "robots" && (
-          <div>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
-              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
-                <span style={{ color: "#fff", fontWeight: 700 }}>{robots.length}</span> robots in database
-              </p>
-              <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
-                <button onClick={seedRobotsDb} disabled={seedingRobots} style={{ padding: "0.5rem 1rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: seedingRobots ? "not-allowed" : "pointer" }}>
-                  {seedingRobots ? "Seeding..." : "🌱 Seed Default Robots"}
-                </button>
-                <button onClick={() => { setShowRobotForm(true); setEditingRobot(null); }} style={{ padding: "0.5rem 1rem", background: "#E31937", border: "none", color: "#fff", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer" }}>
-                  + Add New Robot
-                </button>
-              </div>
-            </div>
-
-            {seedRobotMessage && (
-              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
-                ✅ {seedRobotMessage}
-              </div>
-            )}
-
-            {showRobotForm && (
-              <div style={{ marginBottom: "2rem" }}>
-                <RobotForm
-                  robot={editingRobot}
-                  onSave={() => { setShowRobotForm(false); setEditingRobot(null); fetchData(); }}
-                  onCancel={() => { setShowRobotForm(false); setEditingRobot(null); }}
-                />
-              </div>
-            )}
-
-            {robots.length === 0 ? (
-              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
-                <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🤖</div>
-                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem", marginBottom: "1rem" }}>No robots in database</p>
-                <p style={{ color: "rgba(255,255,255,0.2)", fontSize: "0.8rem" }}>Click &quot;Seed Default Robots&quot; to add all Optimus models</p>
-              </div>
-            ) : (
-              <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "repeat(auto-fill, minmax(280px, 1fr))", gap: "1rem" }}>
-                {robots.map((item) => (
-                  <div key={item._id} style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", overflow: "hidden" }}>
-                    <div style={{ height: "120px", backgroundImage: item.image ? `url(${item.image})` : "none", backgroundSize: "cover", backgroundPosition: "center", backgroundRepeat: "no-repeat", backgroundColor: "rgba(255,255,255,0.04)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                      {!item.image && <span style={{ color: "rgba(255,255,255,0.2)", fontSize: "2rem" }}>🤖</span>}
-                    </div>
-                    <div style={{ padding: "1rem" }}>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "0.5rem" }}>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <p style={{ color: "#fff", fontWeight: 700, fontSize: "0.9rem", textTransform: "uppercase", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</p>
-                          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>{item.category}</p>
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end", flexShrink: 0, marginLeft: "0.5rem" }}>
-                          <span style={{ padding: "0.2rem 0.5rem", background: item.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: item.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                            {item.inStock ? "In Stock" : "Coming Soon"}
-                          </span>
-                          {item.badge && (
-                            <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                              {item.badge}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
-                        <p style={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}>${item.price?.toLocaleString()}</p>
-                        <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button onClick={() => { setEditingRobot(item); setShowRobotForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Edit
-                          </button>
-                          <button onClick={() => deleteRobot(item._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Delete
-                          </button>
+                          <button onClick={() => { setEditingCar(car); setShowCarForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>Edit</button>
+                          <button onClick={() => deleteCar(car._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>Delete</button>
                         </div>
                       </div>
                     </div>
@@ -665,23 +502,14 @@ export default function AdminPage() {
                 </button>
               </div>
             </div>
-
             {seedAccessoryMessage && (
-              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
-                ✅ {seedAccessoryMessage}
-              </div>
+              <div style={{ background: "rgba(16,185,129,0.1)", border: "1px solid rgba(16,185,129,0.3)", color: "#10B981", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>✅ {seedAccessoryMessage}</div>
             )}
-
             {showAccessoryForm && (
               <div style={{ marginBottom: "2rem" }}>
-                <AccessoryForm
-                  accessory={editingAccessory}
-                  onSave={() => { setShowAccessoryForm(false); setEditingAccessory(null); fetchData(); }}
-                  onCancel={() => { setShowAccessoryForm(false); setEditingAccessory(null); }}
-                />
+                <AccessoryForm accessory={editingAccessory} onSave={() => { setShowAccessoryForm(false); setEditingAccessory(null); fetchData(); }} onCancel={() => { setShowAccessoryForm(false); setEditingAccessory(null); }} />
               </div>
             )}
-
             {accessories.length === 0 ? (
               <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
                 <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🛒</div>
@@ -702,27 +530,140 @@ export default function AdminPage() {
                           <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.7rem", marginTop: "0.2rem", textTransform: "uppercase", letterSpacing: "0.1em" }}>{item.category}</p>
                         </div>
                         <div style={{ display: "flex", flexDirection: "column", gap: "0.25rem", alignItems: "flex-end", flexShrink: 0, marginLeft: "0.5rem" }}>
-                          <span style={{ padding: "0.2rem 0.5rem", background: item.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: item.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                            {item.inStock ? "In Stock" : "Out"}
-                          </span>
-                          {item.badge && (
-                            <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
-                              {item.badge}
-                            </span>
-                          )}
+                          <span style={{ padding: "0.2rem 0.5rem", background: item.inStock ? "rgba(16,185,129,0.15)" : "rgba(227,25,55,0.15)", color: item.inStock ? "#10B981" : "#E31937", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>{item.inStock ? "In Stock" : "Out"}</span>
+                          {item.badge && <span style={{ padding: "0.2rem 0.5rem", background: "rgba(245,158,11,0.15)", color: "#F59E0B", fontSize: "0.6rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>{item.badge}</span>}
                         </div>
                       </div>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: "0.875rem", paddingTop: "0.875rem", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
                         <p style={{ color: "#fff", fontWeight: 700, fontSize: "1rem" }}>${item.price?.toLocaleString()}</p>
                         <div style={{ display: "flex", gap: "0.5rem" }}>
-                          <button onClick={() => { setEditingAccessory(item); setShowAccessoryForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Edit
-                          </button>
-                          <button onClick={() => deleteAccessory(item._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
-                            Delete
-                          </button>
+                          <button onClick={() => { setEditingAccessory(item); setShowAccessoryForm(true); window.scrollTo({ top: 0, behavior: "smooth" }); }} style={{ padding: "0.4rem 0.875rem", background: "transparent", border: "1px solid rgba(255,255,255,0.2)", color: "rgba(255,255,255,0.6)", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>Edit</button>
+                          <button onClick={() => deleteAccessory(item._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>Delete</button>
                         </div>
                       </div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* COUPONS TAB */}
+        {activeTab === "coupons" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
+              <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", letterSpacing: "0.1em" }}>
+                <span style={{ color: "#fff", fontWeight: 700 }}>{coupons.length}</span> coupons · <span style={{ color: "#10B981", fontWeight: 700 }}>{coupons.filter((c) => !c.used).length}</span> active
+              </p>
+              <button onClick={() => setShowCouponForm(!showCouponForm)} style={{ padding: "0.5rem 1rem", background: "#E31937", border: "none", color: "#fff", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.15em", textTransform: "uppercase", cursor: "pointer" }}>
+                + Generate Coupon
+              </button>
+            </div>
+
+            {couponMessage && (
+              <div style={{ background: couponMessage.startsWith("✅") ? "rgba(16,185,129,0.1)" : "rgba(227,25,55,0.1)", border: `1px solid ${couponMessage.startsWith("✅") ? "rgba(16,185,129,0.3)" : "rgba(227,25,55,0.3)"}`, color: couponMessage.startsWith("✅") ? "#10B981" : "#E31937", padding: "0.875rem 1rem", fontSize: "0.8rem", marginBottom: "1.5rem" }}>
+                {couponMessage}
+              </div>
+            )}
+
+            {/* Coupon Form */}
+            {showCouponForm && (
+              <div style={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.08)", padding: "1.5rem", marginBottom: "2rem" }}>
+                <h3 style={{ color: "#fff", fontFamily: "Georgia, serif", fontSize: "1rem", fontWeight: 700, textTransform: "uppercase", marginBottom: "1.5rem" }}>Generate New Coupon</h3>
+                <form onSubmit={createCoupon}>
+                  <div style={{ display: "grid", gridTemplateColumns: isMobile ? "1fr" : "1fr 1fr", gap: "1rem", marginBottom: "1rem" }}>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.4rem" }}>Coupon Code *</label>
+                      <div style={{ display: "flex", gap: "0.5rem" }}>
+                        <input
+                          type="text" value={couponForm.code}
+                          onChange={(e) => setCouponForm((prev) => ({ ...prev, code: e.target.value.toUpperCase() }))}
+                          required placeholder="TESLA-XXXXXXXX"
+                          style={{ flex: 1, padding: "0.75rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "0.875rem", outline: "none", letterSpacing: "0.1em", textTransform: "uppercase", boxSizing: "border-box" }}
+                        />
+                        <button type="button" onClick={generateCouponCode} style={{ padding: "0.75rem 1rem", background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.15)", color: "rgba(255,255,255,0.7)", fontSize: "0.7rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer", whiteSpace: "nowrap" }}>
+                          🎲 Generate
+                        </button>
+                      </div>
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.4rem" }}>Assign to Email (optional)</label>
+                      <input type="email" value={couponForm.assignedTo} onChange={(e) => setCouponForm((prev) => ({ ...prev, assignedTo: e.target.value }))} placeholder="customer@email.com" style={{ width: "100%", padding: "0.75rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "0.875rem", outline: "none", boxSizing: "border-box" }} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.4rem" }}>Description</label>
+                      <input type="text" value={couponForm.description} onChange={(e) => setCouponForm((prev) => ({ ...prev, description: e.target.value }))} placeholder="Full payment coupon for VIP customer" style={{ width: "100%", padding: "0.75rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "0.875rem", outline: "none", boxSizing: "border-box" }} />
+                    </div>
+                    <div>
+                      <label style={{ display: "block", fontSize: "0.65rem", letterSpacing: "0.2em", textTransform: "uppercase", color: "rgba(255,255,255,0.5)", marginBottom: "0.4rem" }}>Expiry Date (optional)</label>
+                      <input type="date" value={couponForm.expiresAt} onChange={(e) => setCouponForm((prev) => ({ ...prev, expiresAt: e.target.value }))} style={{ width: "100%", padding: "0.75rem 1rem", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.1)", color: "#fff", fontSize: "0.875rem", outline: "none", boxSizing: "border-box", colorScheme: "dark" }} />
+                    </div>
+                  </div>
+
+                  <div style={{ background: "rgba(227,25,55,0.05)", border: "1px solid rgba(227,25,55,0.15)", padding: "1rem", marginBottom: "1.25rem" }}>
+                    <p style={{ color: "rgba(255,255,255,0.5)", fontSize: "0.78rem", lineHeight: 1.6 }}>
+                      🎟️ This coupon gives the recipient <strong style={{ color: "#E31937" }}>100% off</strong> — the car will be completely free. The coupon can only be used <strong style={{ color: "#fff" }}>once</strong>. If assigned to an email, only that user can use it.
+                    </p>
+                  </div>
+
+                  <div style={{ display: "flex", gap: "0.75rem", flexWrap: "wrap" }}>
+                    <button type="submit" disabled={creatingCoupon} style={{ padding: "0.875rem 2rem", background: creatingCoupon ? "rgba(227,25,55,0.5)" : "#E31937", color: "#fff", border: "none", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", cursor: creatingCoupon ? "not-allowed" : "pointer" }}>
+                      {creatingCoupon ? "Creating..." : "Create Coupon"}
+                    </button>
+                    <button type="button" onClick={() => setShowCouponForm(false)} style={{ padding: "0.875rem 2rem", background: "transparent", color: "rgba(255,255,255,0.5)", border: "1px solid rgba(255,255,255,0.15)", fontSize: "0.8rem", fontWeight: 700, letterSpacing: "0.2em", textTransform: "uppercase", cursor: "pointer" }}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
+              </div>
+            )}
+
+            {/* Coupons List */}
+            {coupons.length === 0 ? (
+              <div style={{ textAlign: "center", padding: "4rem", border: "1px solid rgba(255,255,255,0.06)" }}>
+                <div style={{ fontSize: "3rem", marginBottom: "1rem", opacity: 0.3 }}>🎟️</div>
+                <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.9rem" }}>No coupons generated yet</p>
+              </div>
+            ) : (
+              <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+                {coupons.map((coupon) => (
+                  <div key={coupon._id} style={{ background: "rgba(255,255,255,0.02)", border: `1px solid ${coupon.used ? "rgba(255,255,255,0.04)" : "rgba(255,255,255,0.08)"}`, padding: isMobile ? "1rem" : "1.25rem 1.5rem", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "1rem", opacity: coupon.used ? 0.6 : 1 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: isMobile ? "0.75rem" : "1.5rem", flexWrap: "wrap" }}>
+                      <div>
+                        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.2rem" }}>Code</p>
+                        <p style={{ color: coupon.used ? "rgba(255,255,255,0.4)" : "#fff", fontWeight: 700, fontSize: "1rem", letterSpacing: "0.15em", fontFamily: "monospace" }}>{coupon.code}</p>
+                      </div>
+                      <div>
+                        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.2rem" }}>Description</p>
+                        <p style={{ color: "#fff", fontSize: "0.8rem" }}>{coupon.description}</p>
+                      </div>
+                      <div>
+                        <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.2rem" }}>Assigned To</p>
+                        <p style={{ color: "#fff", fontSize: "0.8rem" }}>{coupon.assignedTo || "Anyone"}</p>
+                      </div>
+                      {coupon.expiresAt && (
+                        <div>
+                          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.2rem" }}>Expires</p>
+                          <p style={{ color: new Date(coupon.expiresAt) < new Date() ? "#E31937" : "#fff", fontSize: "0.8rem" }}>{new Date(coupon.expiresAt).toLocaleDateString()}</p>
+                        </div>
+                      )}
+                      {coupon.used && (
+                        <div>
+                          <p style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.6rem", letterSpacing: "0.15em", textTransform: "uppercase", marginBottom: "0.2rem" }}>Used By</p>
+                          <p style={{ color: "#fff", fontSize: "0.8rem" }}>{coupon.usedBy}</p>
+                        </div>
+                      )}
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                      <span style={{ padding: "0.3rem 0.875rem", background: coupon.used ? "rgba(255,255,255,0.06)" : "rgba(16,185,129,0.15)", color: coupon.used ? "rgba(255,255,255,0.4)" : "#10B981", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase" }}>
+                        {coupon.used ? "Used" : "Active"}
+                      </span>
+                      {!coupon.used && (
+                        <button onClick={() => deleteCoupon(coupon._id)} style={{ padding: "0.4rem 0.875rem", background: "rgba(227,25,55,0.1)", border: "1px solid rgba(227,25,55,0.3)", color: "#E31937", fontSize: "0.65rem", fontWeight: 700, letterSpacing: "0.1em", textTransform: "uppercase", cursor: "pointer" }}>
+                          Delete
+                        </button>
+                      )}
                     </div>
                   </div>
                 ))}
